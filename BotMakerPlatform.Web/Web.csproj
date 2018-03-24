@@ -35,6 +35,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -132,6 +133,7 @@
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\Site.css" />
+    <Content Include="icon.png" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.js" />
@@ -154,6 +156,11 @@
     <Content Include="Scripts\esm\popper.js.map" />
     <Content Include="Scripts\esm\popper-utils.min.js.map" />
     <Content Include="Scripts\esm\popper-utils.js.map" />
+    <Content Include="Areas\BroadcastBot\Views\web.config" />
+    <Content Include="Areas\BroadcastBot\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\BroadcastBot\Views\Shared\_Layout.cshtml" />
+    <Content Include="Areas\BroadcastBot\Views\Home\Index.cshtml" />
+    <Content Include="Views\Bots\Index.cshtml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
@@ -183,10 +190,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\RouteConfig.cs" />
+    <Compile Include="Areas\BroadcastBot\BroadcastBot.cs" />
+    <Compile Include="Areas\BroadcastBot\BroadcastBotAreaRegistration.cs" />
+    <Compile Include="Areas\BroadcastBot\Controllers\HomeController.cs" />
+    <Compile Include="BaseController.cs" />
+    <Compile Include="BotRepo.cs" />
+    <Compile Include="SubscriberRepo.cs" />
+    <Compile Include="UserBotRepo.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\BotsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\WebhookController.cs" />
+    <Compile Include="IBot.cs" />
+    <Compile Include="Models\UserBot.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
+    <Compile Include="Subscriber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -207,6 +225,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Areas\BroadcastBot\Models\" />
+    <Folder Include="Areas\BroadcastBot\Views\Bots\" />
     <Folder Include="Views\Webhook\" />
   </ItemGroup>
   <ItemGroup>

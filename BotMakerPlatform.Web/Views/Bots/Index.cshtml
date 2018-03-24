@@ -1,0 +1,39 @@
+﻿@using BotMakerPlatform.Web.Models
+@model IBot
+
+@{
+    ViewBag.Title = Model.UniqueName;
+}
+
+<p>
+    <h2>
+        @Model.UniqueName
+        @if (ViewBag.HasIt)
+        {
+            <text>✅</text>
+        }
+    </h2>
+    @if (ViewBag.HasIt)
+    {
+        <p>
+            <small><a href="@Url.Action("Index", "Home", new { area = Model.UniqueName })">Manage</a> your @@@(((UserBot)ViewBag.UserBot).BotUsername)</small>
+        </p>
+    }
+    <span>@Model.Description</span>
+</p>
+
+@if (!ViewBag.HasIt)
+{
+    <fieldset>
+        <legend>Add new bot</legend>
+        @using (Html.BeginForm("AddBot", "Bots", new { uniquename = Model.UniqueName }))
+        {
+            <div class="form-group">
+                <label for="Token">Token</label>
+                <input type="text" class="form-control" id="Token" name="Token" aria-describedby="TokenHelp" placeholder="Enter Token">
+                <small id="TokenHelp" class="form-text text-muted">Enter token received from @@botfather.</small>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        }
+    </fieldset>
+}
