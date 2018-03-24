@@ -1,11 +1,9 @@
 ﻿using BotMakerPlatform.Web;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.Google;
 using Owin;
-using System;
 using System.Web.Mvc;
 using System.Web.Routing;
 using Microsoft.Owin.Security;
@@ -37,21 +35,33 @@ namespace BotMakerPlatform.Web
             //        //    regenerateIdentity: (manager, user) => user.GenerateUserIdentityAsync(manager))
             //    //}
             //});
+
+            //TODO: Make it better, bitch.
+            app.UseCookieAuthentication(new CookieAuthenticationOptions
+            {
+                AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
+            });
+
             //app.UseExternalSignInCookie(DefaultAuthenticationTypes.ExternalCookie);
 
-            app.SetDefaultSignInAsAuthenticationType("GoogleCookie");
-
-            app.UseCookieAuthentication(
-                new CookieAuthenticationOptions
-                {
-                    AuthenticationType = "GoogleCookie"
-                });
+            //app.Use(async (context, next) =>
+            //{
+            //    await next.Invoke();
+            //});
 
             app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions
             {
                 ClientId = "742244818490-kauqsvkp658r666rc92j6vsgo92u24ej.apps.googleusercontent.com",
                 ClientSecret = "zqd4qkAzGZ9jcVClXsM-NgSV"
             });
+
+            app.SetDefaultSignInAsAuthenticationType(DefaultAuthenticationTypes.ApplicationCookie);
+
+            //app.Use(async (context, next) =>
+            //{
+            //    await next.Invoke();
+            //});
+
         }
     }
 }

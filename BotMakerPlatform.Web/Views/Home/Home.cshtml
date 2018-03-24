@@ -1,9 +1,59 @@
-﻿@using Microsoft.AspNet.Identity
+﻿@model BotMakerPlatform.Web.Models.HomeViewModel
 
 @{
     ViewBag.Title = "Home";
 }
 
-<h2>Hello, @User.Identity.Name (@(User.Identity.GetUserId()))</h2>
+<fieldset>
+    <legend>Add new bot</legend>
+    @using (Html.BeginForm("AddBot", "Home"))
+    {
+        <div class="form-group">
+            <label for="Token">Token</label>
+            <input type="text" class="form-control" id="Token" name="Token" aria-describedby="TokenHelp" placeholder="Enter Token">
+            <small id="TokenHelp" class="form-text text-muted">Enter token received from @@botfather.</small>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    }
+</fieldset>
 
-List of statistics
+<hr />
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Id</th>
+            <th scope="col">Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var bot in Model.Bots)
+        {
+            <tr>
+                <th scope="row">@Model.Bots.IndexOf(bot)</th>
+                <td>@bot.Id <small>(<a href="?botid=@bot.Id">Send bulk message</a>, <a href="@Url.Action("WebhookInfo", new { botId = bot.Id })">Webhook info</a>)</small></td>
+                <td>@bot.Name</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (!string.IsNullOrEmpty(Request.QueryString.Get("botid")))
+{
+    <hr />
+
+    <fieldset>
+        <legend>Send messagge to @Request.QueryString["botid"]</legend>
+        @using (Html.BeginForm("SendMessage", "Home"))
+        {
+            <input type="hidden" name="BotId" value="@Request.QueryString["botid"]"/>
+            <div class="form-group">
+                <label for="Message">Message</label>
+                <textarea class="form-control" id="Message" name="Message" aria-describedby="MessageHelp" placeholder="Enter Message"></textarea>
+                <small id="MessageHelp" class="form-text text-muted">Enter Message to send to all users.</small>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        }
+    </fieldset>
+}

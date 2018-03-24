@@ -19,18 +19,34 @@
                 </button>
                 @Html.ActionLink("Bot Maker Platform", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
-            <div class="navbar-collapse collapse">
+            <div class="navbar">
                 <ul class="nav navbar-nav">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li>Hello, @User.Identity.Name - <a href="@Url.Action("Logout", "Account")">Logout</a></li>
+                    }
+                    else
+                    {
+                        <li>Welcome, <a href="@Url.Action("Login", "Account")">Login</a></li>
+                    }
+                    <li><a href="@Url.Action("Logs", "Home")">Logs</a></li>
                 </ul>
             </div>
         </div>
     </div>
 
     <div class="container body-content">
+        @if (!string.IsNullOrEmpty(TempData["Message"]?.ToString()))
+        {
+            <div class="alert alert-success" role="alert">
+                @TempData["Message"]
+            </div>
+        }
+
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            <p>&copy; @DateTime.Now.Year - Bot Maker Platform</p>
         </footer>
     </div>
 
