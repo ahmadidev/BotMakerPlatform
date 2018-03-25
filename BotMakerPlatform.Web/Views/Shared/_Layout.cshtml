@@ -23,13 +23,13 @@
                 <ul class="nav navbar-nav">
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <li>Hello, @User.Identity.Name - <a href="@Url.Action("Logout", "Account")">Logout</a></li>
+                        <li>Hello, @User.Identity.Name - <a href="@Url.Action("Logout", "Account", new { area = "" })">Logout</a></li>
                     }
                     else
                     {
-                        <li>Welcome, <a href="@Url.Action("Login", "Account")">Login</a></li>
+                        <li>Welcome, <a href="@Url.Action("Login", "Account", new { area = "" })">Login</a></li>
                     }
-                    <li><a href="@Url.Action("Logs", "Home")">Logs</a></li>
+                    <li><a href="@Url.Action("Logs", "Home", new { area = "" })">Logs</a></li>
                 </ul>
             </div>
         </div>
