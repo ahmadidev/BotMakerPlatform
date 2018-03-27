@@ -162,6 +162,10 @@
     <Content Include="Areas\BroadcastBot\Views\Shared\_Layout.cshtml" />
     <Content Include="Areas\BroadcastBot\Views\Home\Index.cshtml" />
     <Content Include="Views\Bots\Index.cshtml" />
+    <Content Include="Areas\SupportBot\Views\Home\Index.cshtml" />
+    <Content Include="Areas\SupportBot\Views\Shared\_Layout.cshtml" />
+    <Content Include="Areas\SupportBot\Views\web.config" />
+    <Content Include="Areas\SupportBot\Views\_ViewStart.cshtml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
@@ -194,6 +198,9 @@
     <Compile Include="Areas\BroadcastBot\BroadcastBot.cs" />
     <Compile Include="Areas\BroadcastBot\BroadcastBotAreaRegistration.cs" />
     <Compile Include="Areas\BroadcastBot\Controllers\HomeController.cs" />
+    <Compile Include="Areas\SupportBot\Controllers\HomeController.cs" />
+    <Compile Include="Areas\SupportBot\SupportBot.cs" />
+    <Compile Include="Areas\SupportBot\SupportBotAreaRegistration.cs" />
     <Compile Include="BaseController.cs" />
     <Compile Include="BotRepo.cs" />
     <Compile Include="SubscriberRepo.cs" />
@@ -228,6 +235,7 @@
   <ItemGroup>
     <Folder Include="Areas\BroadcastBot\Models\" />
     <Folder Include="Areas\BroadcastBot\Views\Bots\" />
+    <Folder Include="Areas\SupportBot\Models\" />
     <Folder Include="Views\Webhook\" />
   </ItemGroup>
   <ItemGroup>
