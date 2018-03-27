@@ -1,0 +1,29 @@
+﻿@model List<Subscriber>
+
+@{
+    ViewBag.Title = "SupportBot - Home";
+}
+
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">#</th>
+        <th scope="col">Username</th>
+        <th scope="col">First</th>
+        <th scope="col">Last</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var subscriber in Model)
+    {
+        <tr>
+            <th scope="row">@(Model.IndexOf(subscriber) + 1)</th>
+            <td>@subscriber.Username</td>
+            <td>@subscriber.FirstName</td>
+            <td>@subscriber.LastName</td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<hr/>
