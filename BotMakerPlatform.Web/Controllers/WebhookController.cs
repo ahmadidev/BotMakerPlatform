@@ -41,7 +41,8 @@ namespace BotMakerPlatform.Web.Controllers
                 HomeController.LogRecords.Add($"Bot user added - botId: {botId} username: {update.Message.Chat.Username}");
             }
 
-            BotRepo.Bots.First(x => x.UniqueName == bot.BotUniqueName).Update(botClient, update, botId, subscriber);
+            var subscribers = SubscriberRepo.Subscribers.Where(x => x.BotId == botId);
+            BotRepo.Bots.First(x => x.UniqueName == bot.BotUniqueName).Update(botClient, update, botId, subscribers, subscriber);
 
             return Content("");
         }
