@@ -31,8 +31,8 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         public void End()
         {
-            botClient.SendTextMessageAsync(User.ChatId, "Your current session with " + Supporter.Subscriber.Username + " has ended");
-            botClient.SendTextMessageAsync(Supporter.Subscriber.ChatId, "Your current session with " + User.Username + " has ended");
+            botClient.SendTextMessageAsync(User.ChatId, "Your current session with " + Supporter.Subscriber.Username + " has ended").Wait();
+            botClient.SendTextMessageAsync(Supporter.Subscriber.ChatId, "Your current session with " + User.Username + " has ended").Wait();
         }
     }
 }

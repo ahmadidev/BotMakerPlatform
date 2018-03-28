@@ -102,7 +102,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                 Supporter supporter = SelectSupporter();
                 Connection connection = new Connection(botClient, subscriber, supporter);
 
-                if (HasCurrentConnection(supporter.Subscriber))
+                if (HasCurrentConnection(supporter.Subscriber) && !HasCurrentConnection(subscriber))
                 {
                     requestedConnections.Add(subscriber, connection);
                     supporter.AddWaiter(subscriber);
@@ -110,7 +110,11 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                 }
                 else
                 {
-                    AddConnection(connection);
+                    if (HasCurrentConnection(subscriber))
+                        botClient.SendTextMessageAsync(subscriber.ChatId,
+                            "You are already connected. try talking to the supporter. Don't be shy kiddo");
+                    else
+                        AddConnection(connection);
                 }
             }
         }
@@ -126,7 +130,8 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         {
             foreach (var waiter in requestedConnections.Keys)
             {
-                int numberInLine = WaiterRequestedConnection(waiter).Supporter.WaitingList.Count();
+                int numberInLine = WaiterRequestedConnection(waiter).Supporter.WaitingList.IndexOf(waiter) + 1;
+
                 botClient.SendTextMessageAsync(waiter.ChatId,
                     "You're number " + numberInLine + " in line, Thank you for your patience :)");
 

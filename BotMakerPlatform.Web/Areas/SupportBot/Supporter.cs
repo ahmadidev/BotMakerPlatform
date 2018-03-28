@@ -19,7 +19,8 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         public void AddWaiter(Subscriber waiter)
         {
-            WaitingList.Add(waiter);
+            if (!WaitingList.Contains(waiter))
+                WaitingList.Add(waiter);
         }
 
         public Subscriber GetFirstWaiter()
