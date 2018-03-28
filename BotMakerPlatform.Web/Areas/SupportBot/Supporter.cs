@@ -16,5 +16,20 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             Subscriber = subscriber;
             WaitingList = new List<Subscriber>();
         }
+
+        public void AddWaiter(Subscriber waiter)
+        {
+            WaitingList.Add(waiter);
+        }
+
+        public Subscriber GetFirstWaiter()
+        {
+            if (!WaitingList.Any())
+                return null;
+
+            Subscriber waiter = WaitingList[0];
+            WaitingList.RemoveAt(0);
+            return waiter;
+        }
     }
 }

@@ -10,13 +10,13 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
     public class Connection
     {
         public Subscriber User { get; }
-        public Subscriber Supporter { get; }
+        public Supporter Supporter { get; }
 
         private readonly ITelegramBotClient botClient;
 
         // private int timeOutDuration; // In miliseconds
 
-        public Connection(ITelegramBotClient botClient, Subscriber user, Subscriber supporter)
+        public Connection(ITelegramBotClient botClient, Subscriber user, Supporter supporter)
         {
             User = user;
             Supporter = supporter;
@@ -25,14 +25,14 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         public void Start()
         {
-            botClient.SendTextMessageAsync(User.ChatId, "You are connected to supporter : " + Supporter.Username);
-            botClient.SendTextMessageAsync(Supporter.ChatId, "You are connected to user : " + User.Username);
+            botClient.SendTextMessageAsync(User.ChatId, "You are connected to supporter : " + Supporter.Subscriber.Username);
+            botClient.SendTextMessageAsync(Supporter.Subscriber.ChatId, "You are connected to user : " + User.Username);
         }
 
         public void End()
         {
-            botClient.SendTextMessageAsync(User.ChatId, "Your current session with " + Supporter.Username + " has ended");
-            botClient.SendTextMessageAsync(Supporter.ChatId, "Your current session with " + User.Username + " has ended");
+            botClient.SendTextMessageAsync(User.ChatId, "Your current session with " + Supporter.Subscriber.Username + " has ended");
+            botClient.SendTextMessageAsync(Supporter.Subscriber.ChatId, "Your current session with " + User.Username + " has ended");
         }
     }
 }
