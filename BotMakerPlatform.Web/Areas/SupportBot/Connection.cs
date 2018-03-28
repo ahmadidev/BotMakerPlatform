@@ -25,14 +25,14 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         public void Start()
         {
-            botClient.SendTextMessageAsync(User.ChatId, "You are connected to supporter : " + Supporter.FirstName + " " + Supporter.LastName);
-            botClient.SendTextMessageAsync(Supporter.ChatId, "You are connected to user : " + User.FirstName + " " + User.LastName);
+            botClient.SendTextMessageAsync(User.ChatId, "You are connected to supporter : " + Supporter.Username);
+            botClient.SendTextMessageAsync(Supporter.ChatId, "You are connected to user : " + User.Username);
         }
 
         public void End()
         {
-            botClient.SendTextMessageAsync(User.ChatId, "Your current session with " + Supporter.FirstName + " has ended");
-            botClient.SendTextMessageAsync(Supporter.ChatId, "Your current session with " + User.FirstName + " has ended");
+            botClient.SendTextMessageAsync(User.ChatId, "Your current session with " + Supporter.Username + " has ended");
+            botClient.SendTextMessageAsync(Supporter.ChatId, "Your current session with " + User.Username + " has ended");
         }
     }
 }

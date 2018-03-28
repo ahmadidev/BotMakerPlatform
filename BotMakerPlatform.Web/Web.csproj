@@ -201,7 +201,6 @@
     <Compile Include="Areas\SupportBot\Connection.cs" />
     <Compile Include="Areas\SupportBot\ConnectionManager.cs" />
     <Compile Include="Areas\SupportBot\Controllers\HomeController.cs" />
-    <Compile Include="Areas\SupportBot\Supporter.cs" />
     <Compile Include="Areas\SupportBot\SupportBot.cs" />
     <Compile Include="Areas\SupportBot\SupportBotAreaRegistration.cs" />
     <Compile Include="BaseController.cs" />

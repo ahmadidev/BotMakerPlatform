@@ -38,7 +38,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         public IEnumerable<Subscriber> GetAllSupporters(IEnumerable<Subscriber> subscribers)
         {
-            return Supporters = subscribers.Where(x => x.Username.ToLower()[0] == 'e');
+            return Supporters = subscribers.Where(x => x.Username.ToLower() == "ahmadierfan");
         }
 
         private void HandleUserMessage(ITelegramBotClient botClient, Update update,
