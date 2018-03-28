@@ -28,6 +28,8 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             this.requestedConnections = new Dictionary<Subscriber, Connection>();
         }
 
+        // TODO: Global Bot Client ? 
+
         public void HandleMessage(ITelegramBotClient botClient, Update update,
             int botId, IEnumerable<Subscriber> subscribers, Subscriber subscriber)
         {
@@ -61,6 +63,10 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             {
                 if (!EndConnection(botClient, subscriber))
                     botClient.SendTextMessageAsync(subscriber.ChatId, "There is no connection to end");
+            }
+            else if (update.Message.Text == "/stop")
+            {
+                RemoveWaiter(botClient, subscriber);
             }
             else
             {
@@ -105,8 +111,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                 if (HasCurrentConnection(supporter.Subscriber) && !HasCurrentConnection(subscriber))
                 {
                     requestedConnections.Add(subscriber, connection);
-                    supporter.AddWaiter(subscriber);
-                    MessageWaiters(botClient);
+                    supporter.AddWaiter(botClient, subscriber);
                 }
                 else
                 {
@@ -119,23 +124,22 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             }
         }
 
+        private void RemoveWaiter(ITelegramBotClient botClient, Subscriber waiter)
+        {
+            if(!IsWaiting(waiter))
+                return;;
+
+            botClient.SendTextMessageAsync(waiter.ChatId,
+                "You were just ready to connect. So bad you quit so early :( maybe next time budd. ( just kidding you had a loooong way to go :D)");
+
+            requestedConnections[waiter].Supporter.RemoveWaiter(botClient, waiter);
+            requestedConnections.Remove(waiter);
+        }
+
         private void AddConnection(Connection connection)
         {
             currentConnections.Add(connection);
             connection.Start();
-        }
-
-
-        private void MessageWaiters(ITelegramBotClient botClient)
-        {
-            foreach (var waiter in requestedConnections.Keys)
-            {
-                int numberInLine = WaiterRequestedConnection(waiter).Supporter.WaitingList.IndexOf(waiter) + 1;
-
-                botClient.SendTextMessageAsync(waiter.ChatId,
-                    "You're number " + numberInLine + " in line, Thank you for your patience :)");
-
-            }
         }
 
         private Connection WaiterRequestedConnection(Subscriber waiter)
@@ -155,18 +159,17 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             connection.End();
             currentConnections.Remove(connection);
 
-            foreach (var supporter in Supporters)
+            Supporter supporter = connection.Supporter;
+
+            Subscriber firstWaiter = supporter.GetFirstWaiter();
+
+            if (firstWaiter != null)
             {
-                Subscriber firstWaiter = supporter.GetFirstWaiter();
-
-                if (firstWaiter == null)
-                    continue;
-
                 AddConnection(requestedConnections[firstWaiter]);
                 requestedConnections.Remove(firstWaiter);
             }
 
-            MessageWaiters(botClient);
+            supporter.MessageWaiters(botClient);
 
             return true;
         }
