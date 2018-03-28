@@ -12,7 +12,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         public Subscriber User { get; }
         public Subscriber Supporter { get; }
 
-        private ITelegramBotClient botClient;
+        private readonly ITelegramBotClient botClient;
 
         // private int timeOutDuration; // In miliseconds
 

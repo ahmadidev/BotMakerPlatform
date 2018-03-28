@@ -21,7 +21,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             this.connections = new List<Connection>();
         }
 
-        public IEnumerable<Subscriber> Supporters;
+        public List<Supporter> Supporters;
 
         private List<Connection> connections;
 
@@ -36,9 +36,15 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                 HandleUserMessage(botClient, update, botId, subscribers, subscriber);
         }
 
-        public IEnumerable<Subscriber> GetAllSupporters(IEnumerable<Subscriber> subscribers)
+        public List<Supporter> GetAllSupporters(IEnumerable<Subscriber> subscribers)
         {
-            return Supporters = subscribers.Where(x => x.Username.ToLower() == "ahmadierfan");
+            IEnumerable<Subscriber> supporters = subscribers.Where(x => x.Username.ToLower() == "ahmadierfan");
+
+            foreach (var subscriber in supporters)
+                if (!IsSupporter(subscriber))
+                    Supporters.Add(new Supporter(subscriber));
+
+            return Supporters;
         }
 
         private void HandleUserMessage(ITelegramBotClient botClient, Update update,
@@ -84,8 +90,8 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                     "We're sorry there is no available supporter at this time :(");
             else
             {
-                Subscriber supporter = Supporters.First();
-                Connection connection = new Connection(botClient, subscriber, supporter);
+                Supporter supporter = SelectSupporter();
+                Connection connection = new Connection(botClient, subscriber, supporter.Subscriber);
                 connections.Add(connection);
                 connection.Start();
             }
@@ -100,8 +106,29 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         private bool IsSupporter(Subscriber subscriber)
         {
-            return Supporters.Contains(subscriber);
+            foreach (var supporter in Supporters)
+            {
+                if (supporter.Subscriber.Username == subscriber.Username)
+                    return true;
+            }
 
+            return false;
+        }
+
+        private Supporter SelectSupporter()
+        {
+            if (!Supporters.Any())
+                return null;
+
+            Supporter minWaiterCountSupporter = Supporters[0];
+
+            foreach (var supporter in Supporters)
+            {
+                if (minWaiterCountSupporter.WaitingList.Count() > supporter.WaitingList.Count())
+                    minWaiterCountSupporter = supporter;
+            }
+
+            return minWaiterCountSupporter;
         }
 
         private Connection FindUserConnection(Subscriber subscriber)
