@@ -36,11 +36,16 @@ namespace BotMakerPlatform.Web.Controllers
                 WebhookSecret = Guid.NewGuid().ToString("N")
             };
 
+            HomeController.LogRecords.Add($"Adding Webhook for bot {uniqueName} ({botDto.BotId})");
+
             var webhookUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}{Request.ApplicationPath}/Webhook/Update/?botId={botDto.BotId}&secret={botDto.WebhookSecret}";
             botClient.SetWebhookAsync(webhookUrl);
+            var botInfoInquiry = botClient.GetWebhookInfoAsync().Result;
 
-            if (botClient.GetWebhookInfoAsync().Result.Url != webhookUrl)
+#if RELEASE
+            if (botInfoInquiry.Url != webhookUrl)
                 throw new InvalidOperationException("Webhook failed to set. Seted webhook is not equal to asked one.");
+#endif
 
             UserBotRepo.UserBots.Add(botDto);
 

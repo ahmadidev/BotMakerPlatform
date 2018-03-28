@@ -1,0 +1,43 @@
+﻿@model List<BotMakerPlatform.Web.Areas.StoreBot.Controllers.StoreSubscriber>
+
+@{
+    ViewBag.Title = "Store bot - Home";
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Username</th>
+            <th scope="col">First</th>
+            <th scope="col">Last</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var subscriber in Model)
+        {
+            <tr>
+                <th scope="row">@(Model.IndexOf(subscriber) + 1)</th>
+                <td>@subscriber.Name</td>
+                <td>
+                    @if (subscriber.IsAdmin)
+                    {
+                        <text>✅</text>
+
+                        using (Html.BeginForm("RemoveAdmin", "Home", new { subscriber.ChatId }))
+                        {
+                            <button>Remove Admin</button>
+                        }
+                    }
+                    else
+                    {
+                        using (Html.BeginForm("MakeAdmin", "Home", new { subscriber.ChatId }))
+                        {
+                            <button>Make Admin</button>
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

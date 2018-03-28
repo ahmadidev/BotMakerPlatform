@@ -29,7 +29,13 @@
                     {
                         <li>Welcome, <a href="@Url.Action("Login", "Account", new { area = "" })">Login</a></li>
                     }
-                    <li><a href="@Url.Action("Logs", "Home", new { area = "" })">Logs</a></li>
+                    <li>
+                        <a href="@Url.Action("Logs", "Home", new {area = ""})">Logs</a>
+                        @if (!string.IsNullOrEmpty(ViewBag.WebhookUrl))
+                        {
+                            @: - <a href="@Url.Action("WebhookInfo", "Home")">WebhookInfo</a>
+                        }
+                    </li>
                 </ul>
             </div>
         </div>

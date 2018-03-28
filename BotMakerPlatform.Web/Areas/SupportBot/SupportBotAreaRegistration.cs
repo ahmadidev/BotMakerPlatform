@@ -11,7 +11,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             context.MapRoute(
                 "SupportBot_default",
                 "SupportBot/{controller}/{action}/{id}",
-                new { action = "Index", id = UrlParameter.Optional }
+                new { controller = "Home", action = "Index", id = UrlParameter.Optional }
             );
         }
     }

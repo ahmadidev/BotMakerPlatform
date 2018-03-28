@@ -11,6 +11,7 @@ namespace BotMakerPlatform.Web
         protected string UserId { get; private set; }
         protected IEnumerable<Subscriber> Subscribers { get; private set; }
         protected ITelegramBotClient BotClient { get; private set; }
+        protected int BotId { get; private set; }
 
         public ActionResult WebhookInfo(string botId)
         {
@@ -27,6 +28,8 @@ namespace BotMakerPlatform.Web
 
             BotClient = new TelegramBotClient(userBot.Token);
             Subscribers = SubscriberRepo.Subscribers.Where(x => x.BotId == userBot.BotId);
+
+            ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { userBot.BotId });
         }
     }
 }

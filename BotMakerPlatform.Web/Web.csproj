@@ -43,7 +43,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -77,7 +77,8 @@
       <HintPath>..\packages\Microsoft.Owin.Security.OAuth.4.0.0\lib\net451\Microsoft.Owin.Security.OAuth.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
@@ -159,10 +160,14 @@
     <Content Include="Scripts\esm\popper-utils.js.map" />
     <Content Include="Areas\BroadcastBot\Views\web.config" />
     <Content Include="Areas\BroadcastBot\Views\Home\Index.cshtml" />
+    <Content Include="Areas\BroadcastBot\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\StoreBot\Views\_ViewStart.cshtml" />
+    <Content Include="Areas\SupportBot\Views\_ViewStart.cshtml" />
     <Content Include="Views\Bots\Index.cshtml" />
     <Content Include="Areas\SupportBot\Views\Home\Index.cshtml" />
     <Content Include="Areas\SupportBot\Views\web.config" />
     <Content Include="Areas\StoreBot\Views\web.config" />
+    <Content Include="Areas\StoreBot\Views\Home\Index.cshtml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
     <Content Include="Scripts\jquery-3.3.1.min.js" />
@@ -195,6 +200,10 @@
     <Compile Include="Areas\BroadcastBot\BroadcastBot.cs" />
     <Compile Include="Areas\BroadcastBot\BroadcastBotAreaRegistration.cs" />
     <Compile Include="Areas\BroadcastBot\Controllers\HomeController.cs" />
+    <Compile Include="Areas\StoreBot\Controllers\HomeController.cs" />
+    <Compile Include="Areas\StoreBot\Controllers\StoreAdminRepo.cs" />
+    <Compile Include="Areas\StoreBot\Controllers\StoreSubscriber.cs" />
+    <Compile Include="Areas\StoreBot\StoreAdmin.cs" />
     <Compile Include="Areas\StoreBot\StoreBot.cs" />
     <Compile Include="Areas\StoreBot\StoreBotAreaRegistration.cs" />
     <Compile Include="Areas\SupportBot\Connection.cs" />
@@ -219,7 +228,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\web.config" />
-    <Content Include="packages.config" />
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Properties\PublishProfiles\Rodcom.pubxml" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
@@ -235,10 +246,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\BroadcastBot\Models\" />
-    <Folder Include="Areas\StoreBot\Controllers\" />
     <Folder Include="Areas\StoreBot\Models\" />
     <Folder Include="Areas\SupportBot\Models\" />
-    <Folder Include="Views\Webhook\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
