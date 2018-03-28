@@ -203,6 +203,7 @@
     <Compile Include="Areas\SupportBot\Controllers\HomeController.cs" />
     <Compile Include="Areas\SupportBot\SupportBot.cs" />
     <Compile Include="Areas\SupportBot\SupportBotAreaRegistration.cs" />
+    <Compile Include="Areas\SupportBot\Supporter.cs" />
     <Compile Include="BaseController.cs" />
     <Compile Include="BotRepo.cs" />
     <Compile Include="SubscriberRepo.cs" />
