@@ -97,7 +97,20 @@ namespace BotMakerPlatform.Web
             bool disableNotification = false, int replyToMessageId = 0, IReplyMarkup replyMarkup = null,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            throw new NotImplementedException();
+            var pairs = new[]
+            {
+                new KeyValuePair<string, string>("chatId", chatId),
+                new KeyValuePair<string, string>("text", text),
+                new KeyValuePair<string, string>("token", Token)
+            };
+            var encodedContent = new FormUrlEncodedContent(pairs);
+
+            var result = HttpClient.PostAsync($"{SimulatorBaseUrl}/api/Chats/ReceiveMessage", encodedContent).Result;
+
+            if (!result.IsSuccessStatusCode)
+                throw new InvalidOperationException("SendMessage failed.");
+
+            return Task.FromResult(JsonConvert.DeserializeObject<Message>(result.Content.ReadAsStringAsync().Result));
         }
 
         public Task<Message> ForwardMessageAsync(ChatId chatId, ChatId fromChatId, int messageId, bool disableNotification = false,
