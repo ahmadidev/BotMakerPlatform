@@ -31,10 +31,12 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         public void HandleMessage(ITelegramBotClient botClient, Update update,
             int botId, IEnumerable<Subscriber> subscribers, Subscriber subscriber)
         {
+            List<Supporter> supporters = GetSupporters(botId);
+
             if (IsSupporter(subscriber))
                 HandleSupporterMessage(botClient, update, botId, subscribers, subscriber);
             else
-                HandleUserMessage(botClient, update, botId, subscribers, subscriber);
+                HandleUserMessage(botClient, update, botId, subscribers,  subscriber, supporters.ToArray());
         }
         
         public bool IsSupporter(Subscriber subscriber)
@@ -48,12 +50,17 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             return false;
         }
 
+        public List<Supporter> GetSupporters(int botId)
+        {
+            return Supporters;//.Where(x => x.BotId == botId).ToList();
+        }
+
         private void HandleUserMessage(ITelegramBotClient botClient, Update update,
-            int botId, IEnumerable<Subscriber> subscribers, Subscriber subscriber)
+            int botId, IEnumerable<Subscriber> subscribers, Subscriber subscriber, Supporter[] supporters)
         {
             if (update.Message.Text == "/connect")
             {
-                QueueConnection(botClient, update, subscriber);
+                QueueConnection(botClient, update, subscriber, supporters);
             }
             else if (update.Message.Text == "/end")
             {
@@ -90,9 +97,9 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             }
         }
 
-        private void QueueConnection(ITelegramBotClient botClient, Update update, Subscriber subscriber)
+        private void QueueConnection(ITelegramBotClient botClient, Update update, Subscriber subscriber, Supporter[] supporters)
         {
-            if (!Supporters.Any())
+            if (!supporters.Any())
                 botClient.SendTextMessageAsync(subscriber.ChatId,
                     "We're sorry there is no available supporter at this time :(");
             else if (IsWaiting(subscriber))
@@ -102,7 +109,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             }
             else
             {
-                Supporter supporter = SelectSupporter();
+                Supporter supporter = SelectSupporter(supporters);
                 Connection connection = new Connection(botClient, subscriber, supporter);
 
                 if (HasCurrentConnection(supporter.ChatId) && !HasCurrentConnection(subscriber.ChatId))
@@ -177,14 +184,14 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             return requestedConnections.ContainsKey(subscriber);
         }
 
-        private Supporter SelectSupporter()
+        private Supporter SelectSupporter(Supporter[] supporters)
         {
-            if (!Supporters.Any())
+            if (!supporters.Any())
                 return null;
 
-            Supporter minWaiterCountSupporter = Supporters[0];
+            Supporter minWaiterCountSupporter = supporters[0];
 
-            foreach (var supporter in Supporters)
+            foreach (var supporter in supporters)
             {
                 int supporterCount = HasCurrentConnection(supporter.ChatId) ? supporter.WaitingList.Count + 1 : supporter.WaitingList.Count;
                 int minWaiterSupporterCount = HasCurrentConnection(minWaiterCountSupporter.ChatId) ? minWaiterCountSupporter.WaitingList.Count + 1 : minWaiterCountSupporter.WaitingList.Count;

@@ -16,9 +16,12 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
         [HttpPost]
         public ActionResult MakeAdmin(long chatId)
         {
-            Subscriber subscriber = Subscribers.SingleOrDefault(x => x.ChatId == chatId);
+            Subscriber subscriber = Subscribers.SingleOrDefault(x => x.BotId == BotId && x.ChatId == chatId);
+
             ConnectionManager.Instance.Supporters.RemoveAll(x => x.BotId == BotId && x.ChatId == chatId);
-            ConnectionManager.Instance.Supporters.Add(new Supporter(subscriber.BotId, subscriber.ChatId, subscriber.Username));
+
+            if (subscriber != null)
+                ConnectionManager.Instance.Supporters.Add(new Supporter(subscriber.BotId, subscriber.ChatId, subscriber.Username));
 
             return Redirect(Request.UrlReferrer?.ToString());
         }

@@ -26,8 +26,9 @@ namespace BotMakerPlatform.Web
             UserId = User.Identity.GetUserId();
             var userBot = UserBotRepo.UserBots.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
 
-            BotClient = new TelegramBotClient(userBot.Token);
             Subscribers = SubscriberRepo.Subscribers.Where(x => x.BotId == userBot.BotId);
+            BotClient = new TelegramBotClient(userBot.Token);
+            BotId = userBot.BotId;
 
             ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { userBot.BotId });
         }
