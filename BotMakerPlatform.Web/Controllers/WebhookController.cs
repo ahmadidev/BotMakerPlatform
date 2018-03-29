@@ -2,6 +2,7 @@
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using Autofac;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -24,7 +25,11 @@ namespace BotMakerPlatform.Web.Controllers
                 throw new HttpException((int)HttpStatusCode.BadRequest, "BotUniqueName or Secret is invalid.");
 
             var subscriber = SubscriberRepo.Subscribers.SingleOrDefault(x => x.ChatId == update.Message.Chat.Id);
-            var botClient = new TelegramBotClient(bot.Token);
+            ITelegramBotClient botClient;
+
+            //TODO: Make sure don't leack
+            using (var scope = IocConfig.Container.BeginLifetimeScope())
+                botClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", bot.Token));
 
             if (subscriber == null)
             {

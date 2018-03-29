@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
+using Autofac;
 using Microsoft.AspNet.Identity;
 using Telegram.Bot;
 
@@ -26,7 +27,10 @@ namespace BotMakerPlatform.Web
             UserId = User.Identity.GetUserId();
             var userBot = UserBotRepo.UserBots.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
 
-            BotClient = new TelegramBotClient(userBot.Token);
+            //TODO: Make sure don't leack
+            using (var scope = IocConfig.Container.BeginLifetimeScope())
+                BotClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", userBot.Token));
+
             Subscribers = SubscriberRepo.Subscribers.Where(x => x.BotId == userBot.BotId);
 
             ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { userBot.BotId });
