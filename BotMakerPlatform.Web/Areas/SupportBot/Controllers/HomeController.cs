@@ -12,17 +12,23 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
             return View(subscribers);
         }
 
+
         [HttpPost]
-        public ActionResult SendMessage(string message)
+        public ActionResult MakeAdmin(long chatId)
         {
-            var subscribers = Subscribers.ToList();
+            Subscriber subscriber = Subscribers.SingleOrDefault(x => x.ChatId == chatId);
+            ConnectionManager.Instance.Supporters.RemoveAll(x => x.BotId == BotId && x.ChatId == chatId);
+            ConnectionManager.Instance.Supporters.Add(new Supporter(subscriber.BotId, subscriber.ChatId, subscriber.Username));
 
-            foreach (var user in subscribers)
-                BotClient.SendTextMessageAsync(user.ChatId, message);
+            return Redirect(Request.UrlReferrer?.ToString());
+        }
 
-            TempData["Message"] = $"Message sent to {subscribers.Count} user(s).";
+        [HttpPost]
+        public ActionResult RemoveAdmin(long chatId)
+        {
+            ConnectionManager.Instance.Supporters.RemoveAll(x => x.BotId == BotId && x.ChatId == chatId);
 
-            return RedirectToAction("Index");
+            return Redirect(Request.UrlReferrer?.ToString());
         }
     }
 }

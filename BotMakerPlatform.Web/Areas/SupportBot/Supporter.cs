@@ -8,13 +8,20 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 {
     public class Supporter
     {
-        public Subscriber Subscriber { get; private set; }
+        public int BotId { get; private set; }
+
+        public long ChatId { get; private set; }
+
+        public string Username { get; private set; }
+
 
         public List<Subscriber> WaitingList { get; private set; }
 
-        public Supporter(Subscriber subscriber)
+        public Supporter(int botId, long chatId, string username)
         {
-            Subscriber = subscriber;
+            BotId = botId;
+            ChatId = chatId;
+            Username = username;
             WaitingList = new List<Subscriber>();
         }
 
@@ -26,7 +33,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             botClient.SendTextMessageAsync(waiter.ChatId,
                 "You're number " + WaitingList.Count + " in line, Thank you for your patience :)");
 
-            botClient.SendTextMessageAsync(Subscriber.ChatId,
+            botClient.SendTextMessageAsync(ChatId,
                 "You have " + WaitingList.Count + " customers in line, Thank you for your knowledge :)");
         }
 
@@ -50,8 +57,10 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         {
             for (int i = 0; i < WaitingList.Count; i++)
             {
+                int line = i + 1;
+
                 botClient.SendTextMessageAsync(WaitingList[i].ChatId,
-                    "You're number " + i + 1 + " in line, Thank you for your patience :)");
+                    "You're number " + line + " in line, Thank you for your patience :)");
             }
         }
     }

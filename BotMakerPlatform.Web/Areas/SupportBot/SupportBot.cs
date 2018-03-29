@@ -17,7 +17,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             if (update.Type != UpdateType.MessageUpdate)
                 return;
 
-            ConnectionManager.Instance().HandleMessage(botClient, update, botId,  subscribers, subscriber);
+            ConnectionManager.Instance.HandleMessage(botClient, update, botId,  subscribers, subscriber);
         }
     }
 }

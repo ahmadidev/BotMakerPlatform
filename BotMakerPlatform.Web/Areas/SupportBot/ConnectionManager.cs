@@ -12,12 +12,10 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
     {
         private static ConnectionManager instance;
 
-        public static ConnectionManager Instance()
-        {
-            return instance ?? (instance = new ConnectionManager());
-        }
+        public static ConnectionManager Instance => instance ?? (instance = new ConnectionManager());
 
         public List<Supporter> Supporters;
+
         private List<Connection> currentConnections;
         private Dictionary<Subscriber, Connection> requestedConnections;
 
@@ -33,23 +31,21 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         public void HandleMessage(ITelegramBotClient botClient, Update update,
             int botId, IEnumerable<Subscriber> subscribers, Subscriber subscriber)
         {
-            GetAllSupporters(subscribers);
-
             if (IsSupporter(subscriber))
                 HandleSupporterMessage(botClient, update, botId, subscribers, subscriber);
             else
                 HandleUserMessage(botClient, update, botId, subscribers, subscriber);
         }
-
-        public List<Supporter> GetAllSupporters(IEnumerable<Subscriber> subscribers)
+        
+        public bool IsSupporter(Subscriber subscriber)
         {
-            IEnumerable<Subscriber> supporters = subscribers.Where(x => x.Username != null && x.Username.ToLower() == "ahmadierfan");
+            foreach (var supporter in Supporters)
+            {
+                if (supporter.ChatId == subscriber.ChatId)
+                    return true;
+            }
 
-            foreach (var subscriber in supporters)
-                if (!IsSupporter(subscriber))
-                    Supporters.Add(new Supporter(subscriber));
-
-            return Supporters;
+            return false;
         }
 
         private void HandleUserMessage(ITelegramBotClient botClient, Update update,
@@ -83,10 +79,10 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         private void MessageOtherEnd(ITelegramBotClient botClient, Update update, Subscriber subscriber)
         {
-            if (FindUserConnection(subscriber) != null)
+            if (FindUserConnection(subscriber.ChatId) != null)
             {
-                Subscriber userEnd = FindUserConnectionEnd(subscriber);
-                botClient.SendTextMessageAsync(userEnd.ChatId, update.Message.Text);
+                long userEndId = FindUserConnectionEndChatId(subscriber);
+                botClient.SendTextMessageAsync(userEndId, update.Message.Text);
             }
             else
             {
@@ -109,14 +105,14 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                 Supporter supporter = SelectSupporter();
                 Connection connection = new Connection(botClient, subscriber, supporter);
 
-                if (HasCurrentConnection(supporter.Subscriber) && !HasCurrentConnection(subscriber))
+                if (HasCurrentConnection(supporter.ChatId) && !HasCurrentConnection(subscriber.ChatId))
                 {
                     requestedConnections.Add(subscriber, connection);
                     supporter.AddWaiter(botClient, subscriber);
                 }
                 else
                 {
-                    if (HasCurrentConnection(subscriber))
+                    if (HasCurrentConnection(subscriber.ChatId))
                         botClient.SendTextMessageAsync(subscriber.ChatId,
                             "You are already connected. try talking to the supporter. Don't be shy kiddo");
                     else
@@ -152,7 +148,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         private bool EndConnection(ITelegramBotClient botClient, Subscriber subscriber)
         {
-            Connection connection = FindUserConnection(subscriber);
+            Connection connection = FindUserConnection(subscriber.ChatId);
 
             if (connection == null)
                 return false;
@@ -176,22 +172,6 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         }
 
 
-        private bool HasCurrentConnection(Subscriber subscriber)
-        {
-            return FindUserConnection(subscriber) != null;
-        }
-
-        private bool IsSupporter(Subscriber subscriber)
-        {
-            foreach (var supporter in Supporters)
-            {
-                if (supporter.Subscriber.ChatId == subscriber.ChatId)
-                    return true;
-            }
-
-            return false;
-        }
-
         private bool IsWaiting(Subscriber subscriber)
         {
             return requestedConnections.ContainsKey(subscriber);
@@ -206,35 +186,49 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
             foreach (var supporter in Supporters)
             {
-                if (minWaiterCountSupporter.WaitingList.Count() > supporter.WaitingList.Count())
+                int supporterCount = HasCurrentConnection(supporter.ChatId) ? supporter.WaitingList.Count + 1 : supporter.WaitingList.Count;
+                int minWaiterSupporterCount = HasCurrentConnection(minWaiterCountSupporter.ChatId) ? minWaiterCountSupporter.WaitingList.Count + 1 : minWaiterCountSupporter.WaitingList.Count;
+
+                if (minWaiterSupporterCount > supporterCount)
                     minWaiterCountSupporter = supporter;
             }
 
             return minWaiterCountSupporter;
         }
 
-        private Connection FindUserConnection(Subscriber subscriber)
+        private Connection FindUserConnection(long subscriberChatId)
         {
             foreach (var connection in currentConnections)
             {
-                if (connection.User.ChatId == subscriber.ChatId || connection.Supporter.Subscriber.ChatId == subscriber.ChatId)
+                if (connection.User.ChatId == subscriberChatId || connection.Supporter.ChatId == subscriberChatId)
                     return connection;
             }
 
             return null;
         }
 
-        private Subscriber FindUserConnectionEnd(Subscriber subscriber)
+        private bool HasCurrentConnection(long subscriberChatId)
+        {
+            foreach (var connection in currentConnections)
+            {
+                if (connection.User.ChatId == subscriberChatId || connection.Supporter.ChatId == subscriberChatId)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private long FindUserConnectionEndChatId(Subscriber subscriber)
         {
             foreach (var connection in currentConnections)
             {
                 if (connection.User.ChatId == subscriber.ChatId)
-                    return connection.Supporter.Subscriber;
-                if (connection.Supporter.Subscriber.ChatId == subscriber.ChatId)
-                    return connection.User;
+                    return connection.Supporter.ChatId;
+                if (connection.Supporter.ChatId == subscriber.ChatId)
+                    return connection.User.ChatId;
             }
 
-            return null;
+            return 0;
         }
     }
 }
