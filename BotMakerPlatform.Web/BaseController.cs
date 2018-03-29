@@ -32,6 +32,7 @@ namespace BotMakerPlatform.Web
                 BotClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", userBot.Token));
 
             Subscribers = SubscriberRepo.Subscribers.Where(x => x.BotId == userBot.BotId);
+            BotId = userBot.BotId;
 
             ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { userBot.BotId });
         }

@@ -1,4 +1,5 @@
-﻿@model List<Subscriber>
+﻿@using BotMakerPlatform.Web.Areas.SupportBot
+@model List<Subscriber>
 
 @{
     ViewBag.Title = "SupportBot - Home";
@@ -19,11 +20,25 @@
         <tr>
             <th scope="row">@(Model.IndexOf(subscriber) + 1)</th>
             <td>@subscriber.Username</td>
-            <td>@subscriber.FirstName</td>
-            <td>@subscriber.LastName</td>
+            <td>
+                @if (ConnectionManager.Instance.IsSupporter(subscriber))
+                {
+                    <text>✅</text>
+
+                    using (Html.BeginForm("RemoveAdmin", "Home", new { subscriber.ChatId }))
+                    {
+                        <button>Remove Admin</button>
+                    }
+                }
+                else
+                {
+                    using (Html.BeginForm("MakeAdmin", "Home", new { subscriber.ChatId }))
+                    {
+                        <button>Make Admin</button>
+                    }
+                }
+            </td>
         </tr>
     }
     </tbody>
 </table>
-
-<hr/>
