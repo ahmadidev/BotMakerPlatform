@@ -3,6 +3,7 @@ using System.Linq;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot
 {
@@ -16,6 +17,11 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         {
             if (update.Type != UpdateType.MessageUpdate)
                 return;
+
+            //KeyboardButton[] buttons = {new KeyboardButton("Yes"), new KeyboardButton("No")};
+            //ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup();
+
+            //botClient.SendTextMessageAsync(subscriber.ChatId, "Choose", replyMarkup: markup);
 
             Web.Controllers.HomeController.LogRecords.Add(subscriber.Username + " : " + update.Message.Text);
 

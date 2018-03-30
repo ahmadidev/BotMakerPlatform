@@ -32,9 +32,6 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
             botClient.SendTextMessageAsync(waiter.ChatId,
                 "You're number " + WaitingList.Count + " in line, Thank you for your patience :)");
-
-            botClient.SendTextMessageAsync(ChatId,
-                "You have " + WaitingList.Count + " customers in line, Thank you for your knowledge :)");
         }
 
         public void RemoveWaiter(ITelegramBotClient botClient, Subscriber waiter)
@@ -62,6 +59,9 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                 botClient.SendTextMessageAsync(WaitingList[i].ChatId,
                     "You're number " + line + " in line, Thank you for your patience :)");
             }
+
+            botClient.SendTextMessageAsync(ChatId,
+                "You have " + WaitingList.Count + " customers in line, Thank you for your knowledge :)");
         }
     }
 }
