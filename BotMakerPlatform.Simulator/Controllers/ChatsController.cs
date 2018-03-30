@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Web.Http;
-using BotMakerPlatform.Web.Controllers;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -13,7 +12,20 @@ namespace BotMakerPlatform.Simulator.Controllers
     {
         public ChatModel()
         {
-            Messages = new List<string>();
+            Messages = new List<ChatMessage>();
+        }
+
+        public enum MessageDirection
+        {
+            Send,
+            Received
+        }
+        public class ChatMessage
+        {
+
+            public string Text { get; set; }
+
+            public MessageDirection Direction { get; set; }
         }
 
         public long ChatId { get; set; }
@@ -22,47 +34,103 @@ namespace BotMakerPlatform.Simulator.Controllers
 
         public int BotId { get; set; }
 
-        public List<string> Messages { get; set; }
+        public string BotUsername { get; set; }
+
+        public List<ChatMessage> Messages { get; set; }
     }
 
     public class ChatsController : ApiController
     {
         public static readonly List<ChatModel> Chats = new List<ChatModel>();
+        private static readonly Random Random = new Random();
 
         public IHttpActionResult GetAll()
         {
             return Ok(Chats);
         }
 
-        public class SendMessageModel
+        public class NewChatModel
         {
             public int BotId { get; set; }
-            public Update Update { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string Username { get; set; }
+        }
+        public IHttpActionResult New(NewChatModel model)
+        {
+            Chats.Add(new ChatModel
+            {
+                ChatId = Random.Next(1000000, 9999999),
+                BotId = model.BotId,
+                BotUsername = BotsController.Bots.Single(x => x.User.Id == model.BotId).User.Username,
+                Sender = new User
+                {
+                    Id = Random.Next(1000000, 9999999),
+                    IsBot = false,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Username = model.Username
+                }
+            });
+
+            return Ok();
+        }
+
+        public class DeleteChatModel
+        {
+            public long ChatId { get; set; }
+        }
+        [HttpPost]
+        public IHttpActionResult Delete(DeleteChatModel model)
+        {
+            Chats.RemoveAll(x => x.ChatId == model.ChatId);
+
+            return Ok();
+        }
+
+        public class SendMessageModel
+        {
+            public long ChatId { get; set; }
+            public string Text { get; set; }
         }
         [HttpPost]
         public IHttpActionResult SendMessage(SendMessageModel model)
         {
-            if(model.Update.Type != UpdateType.MessageUpdate)
-                throw new InvalidOperationException("Just MessageUpdate is supported.");
+            var chat = Chats.Single(x => x.ChatId == model.ChatId);
+            var botInstance = BotsController.Bots.Single(x => x.User.Id == chat.BotId);
 
-            var botInstance = BotsController.Bots.Single(x => x.User.Id == model.BotId);
+            if (string.IsNullOrEmpty(botInstance.WebhookUrl))
+                throw new InvalidOperationException($"Webhook has not been set for bot {botInstance.User.Id}");
+
             var webhookUrl = botInstance.WebhookUrl;
 
             using (var httpClient = new HttpClient())
             {
-                var chatModel = Chats.SingleOrDefault(x => x.ChatId == model.Update.Message.Chat.Id);
-                if (chatModel == null)
+                chat.Messages.Add(new ChatModel.ChatMessage
                 {
-                    chatModel = new ChatModel
-                    {
-                        ChatId = model.Update.Message.Chat.Id,
-                        BotId = botInstance.User.Id,
-                        Sender = model.Update.Message.From
-                    };
-                    Chats.Add(chatModel);
-                }
+                    Direction = ChatModel.MessageDirection.Send,
+                    Text = model.Text
+                });
 
-                var result = httpClient.PostAsJsonAsync(webhookUrl, model.Update).Result;
+                var update = new Update
+                {
+                    Message = new Message
+                    {
+                        Date = DateTime.Now,
+                        Chat = new Chat
+                        {
+                            Id = chat.ChatId,
+                            FirstName = chat.Sender.FirstName,
+                            LastName = chat.Sender.LastName,
+                            Username = chat.Sender.Username,
+                            Type = ChatType.Private
+                        },
+                        MessageId = (int)DateTime.Now.Ticks,
+                        From = chat.Sender,
+                        Text = model.Text
+                    }
+                };
+                var result = httpClient.PostAsJsonAsync(webhookUrl, update).Result;
 
                 if (!result.IsSuccessStatusCode)
                     throw new InvalidOperationException("Send message to webhook failed.");
@@ -91,9 +159,11 @@ namespace BotMakerPlatform.Simulator.Controllers
             if (chatModel == null)
                 return BadRequest("There is no such chat id.");
 
-            chatModel.Messages.Add(model.Text);
-
-            HomeController.LogRecords.Add($"Received message for {model.ChatId}: {model.Text}");
+            chatModel.Messages.Add(new ChatModel.ChatMessage
+            {
+                Direction = ChatModel.MessageDirection.Received,
+                Text = model.Text
+            });
 
             return Ok();
         }

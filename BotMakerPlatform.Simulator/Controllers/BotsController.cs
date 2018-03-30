@@ -18,26 +18,26 @@ namespace BotMakerPlatform.Simulator.Controllers
         {
             new TelegramBotInstance
             {
-                Token = "supportertoken_123",
+                Token = "samplebot_1_token",
                 User = new User
                 {
                     Id = 1,
-                    FirstName = "To be a supporter bot",
-                    LastName = "Simulator",
-                    Username = "tobeSupporterBot",
+                    FirstName = "Sample 1",
+                    LastName = "Bot",
+                    Username = "sample1_bot",
                     IsBot = true
                 }
             },
             new TelegramBotInstance
             {
-                Token = "storetoken_123",
+                Token = "samplebot_2_token",
                 User =
                     new User
                     {
                         Id = 2,
-                        FirstName = "To be a store bot",
-                        LastName = "Simulator",
-                        Username = "tobeStoreBot",
+                        FirstName = "Sample 2",
+                        LastName = "Bot",
+                        Username = "sample2_bot",
                         IsBot = true
                     }
             }
