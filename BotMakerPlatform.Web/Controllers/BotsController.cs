@@ -43,8 +43,8 @@ namespace BotMakerPlatform.Web.Controllers
             };
 
             HomeController.LogRecords.Add($"Adding Webhook for bot {uniqueName} ({botDto.BotId})");
-
-            var webhookUrl = $"{Request.Url.Scheme}://{Request.Url.Authority}{Request.ApplicationPath}Webhook/Update/?botId={botDto.BotId}&secret={botDto.WebhookSecret}";
+            
+            var webhookUrl = $"{Request.Url.Scheme}://{Request.Url.Authority.TrimEnd('/')}/{Request.ApplicationPath?.Trim('/')}/Webhook/Update/?botId={botDto.BotId}&secret={botDto.WebhookSecret}";
             botClient.SetWebhookAsync(webhookUrl).Wait();
             var botInfoInquiry = botClient.GetWebhookInfoAsync().Result;
 
