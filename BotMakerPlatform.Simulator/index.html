@@ -95,7 +95,7 @@
     </style>
     <div class="container body-content">
         <!-- Button trigger modal -->
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#newChatModal">
+        <button type="button" class="btn btn-primary new-chat-modal" data-toggle="modal" data-target="#newChatModal">
             New Chat
         </button>
 
@@ -184,10 +184,10 @@
                     })
                     .done(function () {
                         $('#newChatModal').modal('hide');
-                        $('.bots-select').val('');
-                        $('#botNewFirstName').val('');
-                        $('#botNewLastName').val('');
-                        $('#botNewUsername').val('');
+                        //$('.bots-select').val('');
+                        //$('#botNewFirstName').val('');
+                        //$('#botNewLastName').val('');
+                        //$('#botNewUsername').val('');
 
                         reloadChats();
                     })
@@ -286,6 +286,14 @@
                 var keyCode = e.keyCode || e.which,
                     arrow = { left: 37, up: 38, right: 39, down: 40 };
 
+                if (e.ctrlKey && keyCode === 46 /*Delete*/) {
+                    $('.chat-instance.chat-active .close').click();
+                }
+
+                if (e.ctrlKey && keyCode === 77 /*m*/) {
+                    $('.new-chat-modal').click();
+                }
+
                 if (e.ctrlKey && (keyCode === arrow.left || keyCode === arrow.right)) {
                     var $activeInstance = $('.chat-instance.chat-active');
                     var activeIndex;
@@ -315,6 +323,10 @@
                     $('.chat-active').find('.chat-form input')[0].focus();
                 }
             };
+
+            $('#newChatModal').on('shown.bs.modal', function (e) {
+                $(this).find('#bots-select')[0].focus();
+            });
         });
     </script>
 </body>
