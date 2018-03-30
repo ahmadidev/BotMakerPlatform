@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BotMakerPlatform.Web.Models
+namespace BotMakerPlatform.Web.Repo
 {
     public class HomeViewModel
     {

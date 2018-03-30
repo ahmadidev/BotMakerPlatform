@@ -1,8 +1,8 @@
-﻿namespace BotMakerPlatform.Web.Models
+﻿namespace BotMakerPlatform.Web.Repo
 {
-    public class UserBot
+    public class BotInstanceRecord
     {
-        public int BotId { get; set; }
+        public int Id { get; set; }
 
         public string BotUsername { get; set; }
 

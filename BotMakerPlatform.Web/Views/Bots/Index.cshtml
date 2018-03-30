@@ -1,5 +1,5 @@
-﻿@using BotMakerPlatform.Web.Models
-@model IBot
+﻿@using BotMakerPlatform.Web.Repo
+@model IBotDefinition
 
 @{
     ViewBag.Title = Model.UniqueName;
@@ -16,7 +16,7 @@
     @if (ViewBag.HasIt)
     {
         <p>
-            <small><a href="@Url.Action("Index", "Home", new { area = Model.UniqueName })">Manage</a> your @@@(((UserBot)ViewBag.UserBot).BotUsername)</small>
+            <small><a href="@Url.Action("Index", "Home", new { area = Model.UniqueName })">Manage</a> your @@@(((BotInstanceRecord)ViewBag.BotInstance).BotUsername)</small>
         </p>
     }
     <span>@Model.Description</span>

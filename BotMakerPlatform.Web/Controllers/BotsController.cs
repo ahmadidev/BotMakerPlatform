@@ -2,7 +2,8 @@
 using System.Linq;
 using System.Web.Mvc;
 using Autofac;
-using BotMakerPlatform.Web.Models;
+using BotMakerPlatform.Web.CriticalDtos;
+using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNet.Identity;
 using Telegram.Bot;
 
@@ -13,10 +14,11 @@ namespace BotMakerPlatform.Web.Controllers
         [HttpGet]
         public ActionResult Index(string uniqueName)
         {
-            var bot = BotRepo.Bots.Single(x => x.UniqueName == uniqueName);
-            var userBot = UserBotRepo.UserBots.FirstOrDefault(x => x.BotUniqueName == uniqueName && x.UserId == User.Identity.GetUserId());
-            ViewBag.HasIt = userBot != null;
-            ViewBag.UserBot = userBot;
+            var bot = BotDefinitionRepo.BotDefinitions.Single(x => x.UniqueName == uniqueName);
+            var botInstance = BotInstanceRepo.BotInstanceRecords.FirstOrDefault(x => x.BotUniqueName == uniqueName && x.UserId == User.Identity.GetUserId());
+
+            ViewBag.HasIt = botInstance != null;
+            ViewBag.BotInstance = botInstance;
 
             return View(bot);
         }
@@ -24,17 +26,17 @@ namespace BotMakerPlatform.Web.Controllers
         [HttpPost]
         public ActionResult AddBot(string token, string uniqueName)
         {
-            ITelegramBotClient botClient;
+            ITelegramBotClient telegramClient;
 
             //TODO: Make sure don't leack
             using (var scope = IocConfig.Container.BeginLifetimeScope())
-                botClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", token));
+                telegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", token));
 
-            var result = botClient.GetMeAsync().Result;
+            var result = telegramClient.GetMeAsync().Result;
 
-            var botDto = new UserBot
+            var botInstance = new BotInstanceRecord
             {
-                BotId = new Random().Next(1000, 9999),
+                Id = new Random().Next(1000, 9999),
                 BotUsername = result.Username,
                 BotUniqueName = uniqueName,
                 UserId = User.Identity.GetUserId(),
@@ -42,17 +44,25 @@ namespace BotMakerPlatform.Web.Controllers
                 WebhookSecret = Guid.NewGuid().ToString("N")
             };
 
-            HomeController.LogRecords.Add($"Adding Webhook for bot {uniqueName} ({botDto.BotId})");
+            HomeController.LogRecords.Add($"Adding Webhook for bot {uniqueName} ({botInstance.Id})");
             
-            var webhookUrl = $"{Request.Url.Scheme}://{Request.Url.Authority.TrimEnd('/')}/{Request.ApplicationPath?.Trim('/')}/Webhook/Update/?botId={botDto.BotId}&secret={botDto.WebhookSecret}";
-            botClient.SetWebhookAsync(webhookUrl).Wait();
-            var botInfoInquiry = botClient.GetWebhookInfoAsync().Result;
+            var webhookUrl = $"{Request.Url.Scheme}://{Request.Url.Authority.TrimEnd('/')}/{Request.ApplicationPath?.Trim('/')}/Webhook/Update/?{nameof(WebhookUpdateDto.BotInstanceId)}={botInstance.Id}&{nameof(WebhookUpdateDto.Secret)}={botInstance.WebhookSecret}";
+            telegramClient.SetWebhookAsync(webhookUrl).Wait();
+            var botInfoInquiry = telegramClient.GetWebhookInfoAsync().Result;
 
             if (!Configuration.IsDebug)
                 if (botInfoInquiry.Url != webhookUrl)
                     throw new InvalidOperationException("Webhook failed to set. Seted webhook is not equal to asked one.");
 
-            UserBotRepo.UserBots.Add(botDto);
+            BotInstanceRepo.BotInstanceRecords.Add(botInstance);
+
+            ////Id = new Random().Next(1000, 9999)
+            //BotInstanceRepo.BotInstanceRecords.Add(
+            //    result.Username,
+            //    uniqueName,
+            //    User.Identity.GetUserId(),
+            //    token,
+            //    Guid.NewGuid().ToString("N"));
 
             TempData["Message"] = $"Bot @{result.Username} added successfully.";
 

@@ -25,16 +25,16 @@ namespace BotMakerPlatform.Web
         {
             var botUniqueName = filterContext.RouteData.DataTokens["area"].ToString();
             UserId = User.Identity.GetUserId();
-            var userBot = UserBotRepo.UserBots.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
+            var botInstance = BotInstanceRepo.BotInstanceRecords.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
 
             //TODO: Make sure don't leack
             using (var scope = IocConfig.Container.BeginLifetimeScope())
-                BotClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", userBot.Token));
+                BotClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstance.Token));
 
-            Subscribers = SubscriberRepo.Subscribers.Where(x => x.BotId == userBot.BotId);
-            BotId = userBot.BotId;
+            Subscribers = SubscriberRepo.Subscribers.Where(x => x.BotId == botInstance.Id);
+            BotId = botInstance.Id;
 
-            ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { userBot.BotId });
+            ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { BotId = botInstance.Id });
         }
     }
 }

@@ -12,7 +12,7 @@ namespace BotMakerPlatform.Web.Controllers
         public ActionResult Index()
         {
             if (User.Identity.IsAuthenticated)
-                return View("Home", BotRepo.Bots.ToList());
+                return View("Home", BotDefinitionRepo.BotDefinitions.ToList());
 
             return View("Landing");
         }
