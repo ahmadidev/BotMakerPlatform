@@ -11,6 +11,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
     {
         public int Id { get; set; }
         public ITelegramBotClient TelegramClient { get; set; }
+
         public IEnumerable<Subscriber> Subscribers { get; set; }
 
         public IEnumerable<Subscriber> Supporters { get; set; }
@@ -105,13 +106,6 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             {
                 var supporter = SelectSupporter();
 
-                var connection = new Connection
-                {
-                    BotInstanceId = Id,
-                    UserChatId = subscriber.ChatId,
-                    SupporterChatId = supporter.ChatId,
-                };
-
                 if (HasCurrentConnection(supporter.ChatId) && !HasCurrentConnection(subscriber.ChatId))
                 {
                     //supporter.AddWaiter(TelegramClient, subscriber);
@@ -122,15 +116,26 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                         TelegramClient.SendTextMessageAsync(subscriber.ChatId,
                             "You are already connected. try talking to the supporter. Don't be shy kiddo");
                     else
-                        AddConnection(connection);
+                        AddConnection(subscriber, supporter);
                 }
             }
         }
 
-        private void AddConnection(Connection connection)
+        private void AddConnection(Subscriber subscriber, Subscriber supporter)
         {
             var connectionRepo = new ConnectionRepo(Id);
-            connectionRepo.Add(connection);
+
+            connectionRepo.Add(new Connection
+            {
+                BotInstanceId = Id,
+                SupporterChatId = supporter.ChatId,
+                UserChatId = subscriber.ChatId
+            });
+
+            TelegramClient.SendTextMessageAsync(supporter.ChatId, "You are now connected to user : "
+                + subscriber.Username);
+
+            TelegramClient.SendTextMessageAsync(subscriber.ChatId, "You are now connected to supporter");
         }
 
         private bool EndConnection(Subscriber subscriber)
@@ -142,6 +147,11 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
             var connectionRepo = new ConnectionRepo(Id);
             connectionRepo.Remove(connection);
+
+            TelegramClient.SendTextMessageAsync(connection.SupporterChatId, "Your Connection has ended with "
+                + subscriber.Username);
+
+            TelegramClient.SendTextMessageAsync(connection.UserChatId, "Your Connection has ended");
 
             return true;
         }
