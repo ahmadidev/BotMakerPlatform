@@ -19,6 +19,11 @@ namespace BotMakerPlatform.Web.Repo
             return Subscribers.Where(x => x.BotInstanceId == BotInstanceId);
         }
 
+        public Subscriber GetByChatId(long chatId)
+        {
+            return GetAll().SingleOrDefault(x => x.ChatId == chatId);
+        }
+
         public void Add(long chatId, string username, string firstName, string lastName)
         {
             Subscribers.Add(new Subscriber

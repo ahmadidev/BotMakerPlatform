@@ -1,5 +1,7 @@
 ﻿using System.Linq;
 using System.Web.Mvc;
+using BotMakerPlatform.Web.Areas.SupportBot.Models;
+using BotMakerPlatform.Web.Areas.SupportBot.Repo;
 using BotMakerPlatform.Web.BotModule;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
@@ -8,29 +10,39 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
     {
         public ActionResult Index()
         {
-            var subscribers = Subscribers.ToList();
-
+            var supporters = new SupporterRepo(BotInstanceId).GetAll();
+            var subscribers = Subscribers
+                .GroupJoin(supporters,
+                    subscriber => subscriber.ChatId,
+                    supporter => supporter.ChatId,
+                    (subscriber, thisSupporters) => new SubscriberViewModel
+                    {
+                        ChatId = subscriber.ChatId,
+                        Username = subscriber.Username,
+                        FirstName = subscriber.FirstName,
+                        LastName = subscriber.LastName,
+                        IsSupporter = thisSupporters.Any()
+                    }
+                )
+                .ToList();
+            
             return View(subscribers);
         }
 
-
         [HttpPost]
-        public ActionResult MakeAdmin(long chatId)
+        public ActionResult MakeSupporter(long chatId)
         {
-            var subscriber = Subscribers.SingleOrDefault(x => x.BotInstanceId == BotInstanceId && x.ChatId == chatId);
-
-            ConnectionManager.Instance.Supporters.RemoveAll(x => x.BotId == BotInstanceId && x.ChatId == chatId);
-
-            if (subscriber != null)
-                ConnectionManager.Instance.Supporters.Add(new Supporter(subscriber.BotInstanceId, subscriber.ChatId, subscriber.Username));
+            var supporterRepo = new SupporterRepo(BotInstanceId);
+            supporterRepo.Add(chatId);
 
             return Redirect(Request.UrlReferrer?.ToString());
         }
 
         [HttpPost]
-        public ActionResult RemoveAdmin(long chatId)
+        public ActionResult RemoveSupporter(long chatId)
         {
-            ConnectionManager.Instance.Supporters.RemoveAll(x => x.BotId == BotInstanceId && x.ChatId == chatId);
+            var supporterRepo = new SupporterRepo(BotInstanceId);
+            supporterRepo.Remove(chatId);
 
             return Redirect(Request.UrlReferrer?.ToString());
         }

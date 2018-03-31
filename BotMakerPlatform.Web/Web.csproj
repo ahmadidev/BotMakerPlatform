@@ -206,12 +206,13 @@
     <Compile Include="Areas\StoreBot\StoreBotAreaRegistration.cs" />
     <Compile Include="Areas\StoreBot\StoreBotInstance.cs" />
     <Compile Include="Areas\SupportBot\Connection.cs" />
-    <Compile Include="Areas\SupportBot\ConnectionManager.cs" />
     <Compile Include="Areas\SupportBot\Controllers\HomeController.cs" />
+    <Compile Include="Areas\SupportBot\Repo\ConnectionRepo.cs" />
+    <Compile Include="Areas\SupportBot\Repo\SupporterRepo.cs" />
+    <Compile Include="Areas\SupportBot\Models\SubscriberViewModel.cs" />
     <Compile Include="Areas\SupportBot\SupportBotDefinition.cs" />
     <Compile Include="Areas\SupportBot\SupportBotAreaRegistration.cs" />
     <Compile Include="Areas\SupportBot\SupportBotInstance.cs" />
-    <Compile Include="Areas\SupportBot\Supporter.cs" />
     <Compile Include="BotModule\BaseController.cs" />
     <Compile Include="BotDefinitionRepo.cs" />
     <Compile Include="Configuration.cs" />
@@ -255,7 +256,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\StoreBot\Models\" />
-    <Folder Include="Areas\SupportBot\Models\" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
