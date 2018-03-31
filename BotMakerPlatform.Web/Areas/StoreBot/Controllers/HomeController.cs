@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Web.Mvc;
+using BotMakerPlatform.Web.BotModule;
 
 namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
 {
@@ -28,8 +29,8 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
         [HttpPost]
         public ActionResult MakeAdmin(long chatId)
         {
-            StoreAdminRepo.StoreAdmins.RemoveAll(x => x.BotId == BotId && x.ChatId == chatId);
-            StoreAdminRepo.StoreAdmins.Add(new StoreAdmin { BotId = BotId, ChatId = chatId });
+            StoreAdminRepo.StoreAdmins.RemoveAll(x => x.BotId == BotInstanceId && x.ChatId == chatId);
+            StoreAdminRepo.StoreAdmins.Add(new StoreAdmin { BotId = BotInstanceId, ChatId = chatId });
 
             return Redirect(Request.UrlReferrer?.ToString());
         }
@@ -37,7 +38,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
         [HttpPost]
         public ActionResult RemoveAdmin(long chatId)
         {
-            StoreAdminRepo.StoreAdmins.RemoveAll(x => x.BotId == BotId && x.ChatId == chatId);
+            StoreAdminRepo.StoreAdmins.RemoveAll(x => x.BotId == BotInstanceId && x.ChatId == chatId);
 
             return Redirect(Request.UrlReferrer?.ToString());
         }

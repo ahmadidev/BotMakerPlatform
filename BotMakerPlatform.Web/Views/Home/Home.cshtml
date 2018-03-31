@@ -13,12 +13,12 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var bot in Model)
+        @foreach (var botDefinition in Model)
         {
             <tr>
-                <th scope="row">@(Model.IndexOf(bot) + 1)</th>
-                <td><a href="@Url.Action("Index", "Bots", new { uniquename = bot.UniqueName })">@bot.UniqueName</a></td>
-                <td>@bot.Description</td>
+                <th scope="row">@(Model.IndexOf(botDefinition) + 1)</th>
+                <td><a href="@Url.Action("Index", "Bots", new { uniquename = botDefinition.UniqueName })">@botDefinition.UniqueName</a></td>
+                <td>@botDefinition.Description</td>
             </tr>
         }
     </tbody>

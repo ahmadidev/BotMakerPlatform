@@ -6,66 +6,53 @@ using System.Web.Mvc;
 using Autofac;
 using BotMakerPlatform.Web.Areas.SupportBot;
 using BotMakerPlatform.Web.CriticalDtos;
+using BotMakerPlatform.Web.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
-using Telegram.Bot.Types.Enums;
 
 namespace BotMakerPlatform.Web.Controllers
 {
     public class WebhookController : Controller
     {
+        private SubscriberRepo SubscriberRepo { get; set; }
+
         // Webhook/Update/?BotInstanceId=Ahmadbot&Secret=somesecretrandom
         [HttpPost]
-        public ActionResult Update(Update update, int botInstanceId, string secret)//(WebhookUpdateDto webhookUpdateDto) To make binder bind Update from body
+        public ActionResult Update(Update update, int botInstanceId, string secret)//(WebhookUpdateDto webhookUpdateDto) ToDo: make binder bind Update from body
         {
             var webhookUpdateDto = new WebhookUpdateDto { Update = update, BotInstanceId = botInstanceId, Secret = secret };
-
             HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {webhookUpdateDto.Update.Type}.");
 
-            if (webhookUpdateDto.Update.Type != UpdateType.MessageUpdate)
-                return Content("");
-
-            var subscriber = GetSubscriber(webhookUpdateDto);
-            if (subscriber == null)
-                subscriber = AddSubscriber(webhookUpdateDto);
+            SubscriberRepo = new SubscriberRepo(webhookUpdateDto.BotInstanceId);
 
             var botInstance = MakeBotInstance(webhookUpdateDto);
-            botInstance.Update(webhookUpdateDto.Update, subscriber);
 
-            foreach (var sub in SubscriberRepo.Subscribers)
-                HomeController.LogRecords.Add($"-> Bot user - BotInstanceId: {sub.BotInstanceId} username: {sub.Username} chatId : {sub.ChatId}");
+            //TODO: We assume update is always a message
+            var subscriber = GetSubscriber(webhookUpdateDto.Update.Message.Chat.Id) ?? AddSubscriber(webhookUpdateDto.Update);
+            botInstance.Update(webhookUpdateDto.Update, subscriber);
 
             return Content("");
         }
 
-        private static Subscriber GetSubscriber(WebhookUpdateDto webhookUpdateDto)
+        private Subscriber GetSubscriber(long chatId)
         {
-            return SubscriberRepo.Subscribers.SingleOrDefault(x => x.BotInstanceId == webhookUpdateDto.BotInstanceId &&
-                                                                   x.ChatId == webhookUpdateDto.Update.Message.Chat.Id);
+            return SubscriberRepo.GetAll().SingleOrDefault(x => x.ChatId == chatId);
         }
 
-        private static Subscriber AddSubscriber(WebhookUpdateDto webhookUpdateDto)
+        private Subscriber AddSubscriber(Update update)
         {
-            HomeController.LogRecords.Add($"Adding Subscriber BotInstanceId: {webhookUpdateDto.BotInstanceId}.");
+            var message = update.Message;
 
-            //TODO: First and Last
-            var subscriber = new Subscriber
-            {
-                BotInstanceId = webhookUpdateDto.BotInstanceId,
-                ChatId = webhookUpdateDto.Update.Message.Chat.Id,
-                Username = webhookUpdateDto.Update.Message.Chat.Username,
-                FirstName = webhookUpdateDto.Update.Message.From.FirstName,
-                LastName = webhookUpdateDto.Update.Message.From.LastName
-            };
+            //TODO: First and Last are not provided
+            SubscriberRepo.Add(message.Chat.Id,
+                               message.Chat.Username,
+                               message.From.FirstName,
+                               message.From.LastName);
 
-            SubscriberRepo.Subscribers.Add(subscriber);
-
-            HomeController.LogRecords.Add($"Added Subscriber BotInstanceId: {subscriber.BotInstanceId}.");
-
-            return subscriber;
+            return GetSubscriber(message.Chat.Id);
         }
 
-        private static IBotInstance MakeBotInstance(WebhookUpdateDto webhookUpdateDto)
+        private IBotInstance MakeBotInstance(WebhookUpdateDto webhookUpdateDto)
         {
             var botInstanceRecord = BotInstanceRepo.BotInstanceRecords.SingleOrDefault(x => x.Id == webhookUpdateDto.BotInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
 
@@ -78,16 +65,14 @@ namespace BotMakerPlatform.Web.Controllers
             using (var scope = IocConfig.Container.BeginLifetimeScope())
                 telegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstanceRecord.Token));
 
-            var subscribers = SubscriberRepo.Subscribers.Where(x => x.BotInstanceId == webhookUpdateDto.BotInstanceId);
-
             //BotInstance actual work.
             //BotMakerPlatform.Web.Areas.SupportBot.SupportBotInstance
             var typeName = typeof(SupportBotInstance).FullName.Replace("SupportBot", botInstanceRecord.BotUniqueName);
 
             var botInstance = (IBotInstance)Activator.CreateInstance(Type.GetType(typeName));
             botInstance.Id = botInstanceRecord.Id;
-            botInstance.Subscribers = subscribers;
             botInstance.TelegramClient = telegramClient;
+            botInstance.Subscribers = SubscriberRepo.GetAll();
 
             return botInstance;
         }

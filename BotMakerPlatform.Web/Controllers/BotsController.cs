@@ -24,11 +24,11 @@ namespace BotMakerPlatform.Web.Controllers
         }
 
         [HttpPost]
-        public ActionResult AddBot(string token, string uniqueName)
+        public ActionResult AddBotInstance(string token, string uniqueName)
         {
             ITelegramBotClient telegramClient;
 
-            //TODO: Make sure don't leack
+            //TODO: Make sure don't leak
             using (var scope = IocConfig.Container.BeginLifetimeScope())
                 telegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", token));
 
@@ -45,14 +45,14 @@ namespace BotMakerPlatform.Web.Controllers
             };
 
             HomeController.LogRecords.Add($"Adding Webhook for bot {uniqueName} ({botInstance.Id})");
-            
+
             var webhookUrl = $"{Request.Url.Scheme}://{Request.Url.Authority.TrimEnd('/')}/{Request.ApplicationPath?.Trim('/')}/Webhook/Update/?{nameof(WebhookUpdateDto.BotInstanceId)}={botInstance.Id}&{nameof(WebhookUpdateDto.Secret)}={botInstance.WebhookSecret}";
             telegramClient.SetWebhookAsync(webhookUrl).Wait();
             var botInfoInquiry = telegramClient.GetWebhookInfoAsync().Result;
 
             if (!Configuration.IsDebug)
                 if (botInfoInquiry.Url != webhookUrl)
-                    throw new InvalidOperationException("Webhook failed to set. Seted webhook is not equal to asked one.");
+                    throw new InvalidOperationException("Webhook failed to set. Setted webhook is not equal to asked one.");
 
             BotInstanceRepo.BotInstanceRecords.Add(botInstance);
 

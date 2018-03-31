@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Web.Mvc;
+using BotMakerPlatform.Web.BotModule;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
 {
@@ -16,9 +17,9 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
         [HttpPost]
         public ActionResult MakeAdmin(long chatId)
         {
-            Subscriber subscriber = Subscribers.SingleOrDefault(x => x.BotInstanceId == BotId && x.ChatId == chatId);
+            var subscriber = Subscribers.SingleOrDefault(x => x.BotInstanceId == BotInstanceId && x.ChatId == chatId);
 
-            ConnectionManager.Instance.Supporters.RemoveAll(x => x.BotId == BotId && x.ChatId == chatId);
+            ConnectionManager.Instance.Supporters.RemoveAll(x => x.BotId == BotInstanceId && x.ChatId == chatId);
 
             if (subscriber != null)
                 ConnectionManager.Instance.Supporters.Add(new Supporter(subscriber.BotInstanceId, subscriber.ChatId, subscriber.Username));
@@ -29,7 +30,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
         [HttpPost]
         public ActionResult RemoveAdmin(long chatId)
         {
-            ConnectionManager.Instance.Supporters.RemoveAll(x => x.BotId == BotId && x.ChatId == chatId);
+            ConnectionManager.Instance.Supporters.RemoveAll(x => x.BotId == BotInstanceId && x.ChatId == chatId);
 
             return Redirect(Request.UrlReferrer?.ToString());
         }

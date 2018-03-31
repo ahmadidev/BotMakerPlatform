@@ -11,10 +11,7 @@ namespace BotMakerPlatform.Web.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            if (User.Identity.IsAuthenticated)
-                return View("Home", BotDefinitionRepo.BotDefinitions.ToList());
-
-            return View("Landing");
+            return View("Home", BotDefinitionRepo.BotDefinitions.ToList());
         }
 
         public ActionResult Logs()

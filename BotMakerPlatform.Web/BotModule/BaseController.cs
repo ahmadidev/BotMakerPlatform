@@ -2,21 +2,22 @@
 using System.Linq;
 using System.Web.Mvc;
 using Autofac;
+using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNet.Identity;
 using Telegram.Bot;
 
-namespace BotMakerPlatform.Web
+namespace BotMakerPlatform.Web.BotModule
 {
     public class BaseController : Controller
     {
         protected string UserId { get; private set; }
         protected IEnumerable<Subscriber> Subscribers { get; private set; }
-        protected ITelegramBotClient BotClient { get; private set; }
-        protected int BotId { get; private set; }
+        protected ITelegramBotClient TelegramClient { get; private set; }
+        protected int BotInstanceId { get; private set; }
 
         public ActionResult WebhookInfo(string botId)
         {
-            var webhookInfo = BotClient.GetWebhookInfoAsync().Result;
+            var webhookInfo = TelegramClient.GetWebhookInfoAsync().Result;
 
             return Json(webhookInfo, JsonRequestBehavior.AllowGet);
         }
@@ -27,12 +28,12 @@ namespace BotMakerPlatform.Web
             UserId = User.Identity.GetUserId();
             var botInstance = BotInstanceRepo.BotInstanceRecords.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
 
-            //TODO: Make sure don't leack
+            //TODO: Make sure don't leak
             using (var scope = IocConfig.Container.BeginLifetimeScope())
-                BotClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstance.Token));
+                TelegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstance.Token));
 
-            Subscribers = SubscriberRepo.Subscribers.Where(x => x.BotInstanceId == botInstance.Id);
-            BotId = botInstance.Id;
+            BotInstanceId = botInstance.Id;
+            Subscribers = new SubscriberRepo(BotInstanceId).GetAll();
 
             ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { BotId = botInstance.Id });
         }

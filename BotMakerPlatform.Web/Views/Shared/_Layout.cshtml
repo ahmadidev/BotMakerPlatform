@@ -30,6 +30,10 @@
                         <li>Welcome, <a href="@Url.Action("Login", "Account", new { area = "" })">Login</a></li>
                     }
                     <li>
+                        @if (Configuration.IsDebug)
+                        {
+                            <a href="//localhost:5852/">Simulator</a> @:-
+                        }
                         <a href="@Url.Action("Logs", "Home", new {area = ""})">Logs</a>
                         @if (!string.IsNullOrEmpty(ViewBag.WebhookUrl))
                         {

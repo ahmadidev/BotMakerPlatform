@@ -26,11 +26,11 @@
 {
     <fieldset>
         <legend>Add new bot</legend>
-        @using (Html.BeginForm("AddBot", "Bots", new { uniquename = Model.UniqueName }))
+        @using (Html.BeginForm("AddBotInstance", "Bots", new { uniquename = Model.UniqueName }))
         {
             <div class="form-group">
                 <label for="Token">Token</label>
-                <input type="text" class="form-control" id="Token" name="Token" aria-describedby="TokenHelp" placeholder="Enter Token">
+                <input type="text" class="form-control" id="Token" name="Token" aria-describedby="TokenHelp" placeholder="Enter Token" autofocus>
                 <small id="TokenHelp" class="form-text text-muted">Enter token received from @@botfather.</small>
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
