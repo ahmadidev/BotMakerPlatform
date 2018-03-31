@@ -19,7 +19,7 @@ namespace BotMakerPlatform.Web.Controllers
 
         public ActionResult Logs()
         {
-            return Json(LogRecords, JsonRequestBehavior.AllowGet);
+            return Json(LogRecords.AsEnumerable().Reverse(), JsonRequestBehavior.AllowGet);
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     public class Subscriber
     {
-        public int BotId { get; set; }
+        public int BotInstanceId { get; set; }
 
         public long ChatId { get; set; }
 

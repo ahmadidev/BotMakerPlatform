@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Web;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
@@ -52,7 +49,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         public List<Supporter> GetSupporters(int botId)
         {
-            return Supporters;//.Where(x => x.BotId == botId).ToList();
+            return Supporters;//.Where(x => x.BotInstanceId == botId).ToList();
         }
 
         private void HandleUserMessage(ITelegramBotClient botClient, Update update,

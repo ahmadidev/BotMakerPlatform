@@ -31,7 +31,7 @@ namespace BotMakerPlatform.Web
             using (var scope = IocConfig.Container.BeginLifetimeScope())
                 BotClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstance.Token));
 
-            Subscribers = SubscriberRepo.Subscribers.Where(x => x.BotId == botInstance.Id);
+            Subscribers = SubscriberRepo.Subscribers.Where(x => x.BotInstanceId == botInstance.Id);
             BotId = botInstance.Id;
 
             ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { BotId = botInstance.Id });
