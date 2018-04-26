@@ -32,6 +32,23 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                 AddConnection(subscriber, supporter);
         }
 
+        private void AddConnection(Subscriber subscriber, Subscriber supporter)
+        {
+            var connectionRepo = new ConnectionRepo(Id);
+
+            connectionRepo.Add(new Connection
+            {
+                BotInstanceId = Id,
+                SupporterChatId = supporter.ChatId,
+                UserChatId = subscriber.ChatId
+            });
+
+            TelegramClient.SendTextMessageAsync(supporter.ChatId, "You are now connected to user : "
+                                                                  + subscriber.Username);
+
+            TelegramClient.SendTextMessageAsync(subscriber.ChatId, "You are now connected to supporter");
+        }
+
         public bool End(Subscriber subscriber)
         {
             Connection connection = FindUserConnection(subscriber.ChatId);
@@ -63,29 +80,12 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             }
         }
 
-        private void AddConnection(Subscriber subscriber, Subscriber supporter)
-        {
-            var connectionRepo = new ConnectionRepo(Id);
-
-            connectionRepo.Add(new Connection
-            {
-                BotInstanceId = Id,
-                SupporterChatId = supporter.ChatId,
-                UserChatId = subscriber.ChatId
-            });
-
-            TelegramClient.SendTextMessageAsync(supporter.ChatId, "You are now connected to user : "
-                + subscriber.Username);
-
-            TelegramClient.SendTextMessageAsync(subscriber.ChatId, "You are now connected to supporter");
-        }
-
-        private Connection FindUserConnection(long subscriberChatId)
+        public Connection FindUserConnection(long subscriberChatId)
         {
             return Connections.FirstOrDefault(connection => connection.UserChatId == subscriberChatId || connection.SupporterChatId == subscriberChatId);
         }
 
-        private bool HasCurrentConnection(long subscriberChatId)
+        public bool HasCurrentConnection(long subscriberChatId)
         {
             foreach (var connection in Connections)
             {
@@ -96,7 +96,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             return false;
         }
 
-        private long FindUserConnectionEndChatId(Subscriber subscriber)
+        public long FindUserConnectionEndChatId(Subscriber subscriber)
         {
             foreach (var connection in Connections)
             {

@@ -17,7 +17,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         public IEnumerable<Subscriber> Supporters { get; set; }
 
-        public ConnectionManager ConnectionManager { get; set; }
+        public RequestManager RequestManager { get; set; }
 
         public void Update(Update update, Subscriber subscriber)
         {
@@ -26,8 +26,8 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
             var supporterRepo = new SupporterRepo(Id);
             Supporters = supporterRepo.GetAll();
-
-            ConnectionManager = new ConnectionManager(Id, TelegramClient);
+            
+            RequestManager = new RequestManager(Id, TelegramClient, Supporters);
 
             Web.Controllers.HomeController.LogRecords.Add(subscriber.Username + " : " + update.Message.Text);
 
@@ -45,25 +45,16 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         private void HandleUserMessage(Update update, Subscriber subscriber)
         {
             if (update.Message.Text == "/connect")
-            {
-                ConnectionManager.Connect(update, subscriber, Supporters.First());
-            }
+                RequestManager.RequestConnect(update, subscriber);
             else if (update.Message.Text == "/end")
-            {
-                if (!ConnectionManager.End(subscriber))
-                {
-                    TelegramClient.SendTextMessageAsync(subscriber.ChatId, "There is no connection to end");
-                }
-            }
+                RequestManager.RequestEnd(update, subscriber);
             else
-            {
-                ConnectionManager.MessageOther(update, subscriber);
-            }
+                RequestManager.RequestMessage(update, subscriber);
         }
 
         private void HandleSupporterMessage(Update update, Subscriber supporter)
         {
-            ConnectionManager.MessageOther(update, supporter);
+            RequestManager.RequestMessage(update, supporter);
         }
     }
 }
