@@ -16,12 +16,15 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             WaitingQueueRepo waitingQueueRepo,
             ConnectionManager connectionManager,
             ITelegramBotClient telegramClient,
-            SubscriberRepo subscriberRepo)
+            SubscriberRepo subscriberRepo,
+            ConnectionNotifier connectionNotifier)
         {
             WaitingQueueRepo = waitingQueueRepo;
             ConnectionManager = connectionManager;
             TelegramClient = telegramClient;
             SubscriberRepo = subscriberRepo;
+
+            connectionNotifier.NotifyOnCustomerDisconnect(CustomerDisconnected);
         }
 
         public void AddToQueue(Subscriber customer)

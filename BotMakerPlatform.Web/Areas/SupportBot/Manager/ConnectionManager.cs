@@ -1,6 +1,4 @@
 ﻿using System.Linq;
-using Autofac;
-using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -12,15 +10,18 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
         private SupporterRepo SupporterRepo { get; }
         private ConnectionRepo ConnectionRepo { get; }
         private ITelegramBotClient TelegramClient { get; }
+        private ConnectionNotifier ConnectionNotifier { get; }
 
         public ConnectionManager(
             SupporterRepo supporterRepo,
             ConnectionRepo connectionRepo,
-            ITelegramBotClient telegramClient)
+            ITelegramBotClient telegramClient,
+            ConnectionNotifier connectionNotifier)
         {
             SupporterRepo = supporterRepo;
             ConnectionRepo = connectionRepo;
             TelegramClient = telegramClient;
+            ConnectionNotifier = connectionNotifier;
         }
 
         public bool TryConnect(Subscriber customer)
@@ -63,8 +64,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
                 TelegramClient.SendTextMessageAsync(supporterChatId, $"You're Disconnected from {customer.FirstName} {customer.LastName}");
                 TelegramClient.SendTextMessageAsync(customer.ChatId, "You're Disconnected.");
 
-                using (var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag))
-                    scope.Resolve<WaitingManager>().CustomerDisconnected();
+                ConnectionNotifier.CustomerDisconnected();
             }
             else
             {

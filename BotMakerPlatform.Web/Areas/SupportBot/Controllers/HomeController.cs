@@ -7,7 +7,7 @@ using BotMakerPlatform.Web.BotModule;
 namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
 {
     public class HomeController : BaseController
-    {
+    { 
         public ActionResult Index()
         {
             var supporters = new SupporterRepo(BotInstanceId).GetAll();
@@ -25,7 +25,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
                     }
                 )
                 .ToList();
-            
+
             return View(subscribers);
         }
 
@@ -34,6 +34,9 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
         {
             var supporterRepo = new SupporterRepo(BotInstanceId);
             supporterRepo.Add(chatId);
+
+            //TODO: What's the correct way?
+            //ConnectionNotifier.CustomerDisconnected();
 
             return Redirect(Request.UrlReferrer?.ToString());
         }

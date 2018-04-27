@@ -47,6 +47,11 @@ namespace BotMakerPlatform.Web
 
             builder
                 .RegisterAssemblyTypes(currentAssembly)
+                .Where(x => x.Name.EndsWith("Notifier"))
+                .InstancePerRequest();
+
+            builder
+                .RegisterAssemblyTypes(currentAssembly)
                 .Where(x => x.Name.EndsWith("Repo"))
                 .WithParameter(new ResolvedParameter(
                     (info, context) => info.Name == "botInstanceId",

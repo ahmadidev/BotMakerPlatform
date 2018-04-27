@@ -206,6 +206,7 @@
     <Compile Include="Areas\StoreBot\StoreBotDefinition.cs" />
     <Compile Include="Areas\StoreBot\StoreBotAreaRegistration.cs" />
     <Compile Include="Areas\StoreBot\StoreBotInstance.cs" />
+    <Compile Include="Areas\SupportBot\ConnectionNotifier.cs" />
     <Compile Include="Areas\SupportBot\Record\ConnectionRecord.cs" />
     <Compile Include="Areas\SupportBot\Manager\ConnectionManager.cs" />
     <Compile Include="Areas\SupportBot\Controllers\HomeController.cs" />
