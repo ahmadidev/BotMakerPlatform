@@ -20,8 +20,14 @@ namespace BotMakerPlatform.Web.Controllers
         [HttpPost]
         public ActionResult Update(Update update, int botInstanceId, string secret)//(WebhookUpdateDto webhookUpdateDto) ToDo: make binder bind Update from body
         {
+            //Request.InputStream.Position = 0;
+            //var input = new StreamReader(Request.InputStream).ReadToEnd();
+            //HomeController.LogRecords.Add(input);
+            //HomeController.LogRecords.Add(update.Message.From.FirstName);
+            //HomeController.LogRecords.Add(update.Message.Chat.FirstName);
+
             var webhookUpdateDto = new WebhookUpdateDto { Update = update, BotInstanceId = botInstanceId, Secret = secret };
-            HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {webhookUpdateDto.Update.Type}.");
+            HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {update.Type}.");
 
             var botInstanceRecord = BotInstanceRepo.BotInstanceRecords.SingleOrDefault(x => x.Id == webhookUpdateDto.BotInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
             if (botInstanceRecord == null)
