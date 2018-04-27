@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -8,6 +9,7 @@ using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.Areas.SupportBot;
 using BotMakerPlatform.Web.CriticalDtos;
 using BotMakerPlatform.Web.Repo;
+using Newtonsoft.Json;
 using Telegram.Bot.Types;
 
 namespace BotMakerPlatform.Web.Controllers
@@ -20,8 +22,10 @@ namespace BotMakerPlatform.Web.Controllers
         [HttpPost]
         public ActionResult Update(Update update, int botInstanceId, string secret)//(WebhookUpdateDto webhookUpdateDto) ToDo: make binder bind Update from body
         {
-            //Request.InputStream.Position = 0;
-            //var input = new StreamReader(Request.InputStream).ReadToEnd();
+            //TODO: Find out the reason of not mapping firstname and lastname of update
+            Request.InputStream.Position = 0;
+            var input = new StreamReader(Request.InputStream).ReadToEnd();
+            update = JsonConvert.DeserializeObject<Update>(input);
             //HomeController.LogRecords.Add(input);
             //HomeController.LogRecords.Add(update.Message.From.FirstName);
             //HomeController.LogRecords.Add(update.Message.Chat.FirstName);
