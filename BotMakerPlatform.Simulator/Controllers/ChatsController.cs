@@ -41,7 +41,7 @@ namespace BotMakerPlatform.Simulator.Controllers
 
     public class ChatsController : ApiController
     {
-        public static readonly List<ChatModel> Chats = new List<ChatModel>();
+        public static List<ChatModel> Chats;
         private static readonly Random Random = new Random();
 
         public IHttpActionResult GetAll()
@@ -84,6 +84,19 @@ namespace BotMakerPlatform.Simulator.Controllers
         public IHttpActionResult Delete(DeleteChatModel model)
         {
             Chats.RemoveAll(x => x.ChatId == model.ChatId);
+
+            return Ok();
+        }
+
+        public class SendBroadcastMessageModel
+        {
+            public string Text { get; set; }
+        }
+        [HttpPost]
+        public IHttpActionResult SendBroadcastMessage(SendBroadcastMessageModel model)
+        {
+            foreach (var chat in Chats)
+                SendMessage(new SendMessageModel { ChatId = chat.ChatId, Text = model.Text });
 
             return Ok();
         }

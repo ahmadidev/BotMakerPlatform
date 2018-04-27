@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Web.Mvc;
 using Autofac;
+using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNet.Identity;
 using Telegram.Bot;
@@ -29,7 +30,7 @@ namespace BotMakerPlatform.Web.BotModule
             var botInstance = BotInstanceRepo.BotInstanceRecords.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
 
             //TODO: Make sure don't leak
-            using (var scope = IocConfig.Container.BeginLifetimeScope())
+            using (var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag))
                 TelegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstance.Token));
 
             BotInstanceId = botInstance.Id;

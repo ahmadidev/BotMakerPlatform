@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using BotMakerPlatform.Web.Areas.StoreBot.Controllers;
 using Telegram.Bot;
@@ -10,8 +9,12 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
     public class StoreBotInstance : IBotInstance
     {
         public int Id { get; set; }
-        public ITelegramBotClient TelegramClient { get; set; }
-        public IEnumerable<Subscriber> Subscribers { get; set; }
+        private ITelegramBotClient TelegramClient { get; }
+
+        public StoreBotInstance(ITelegramBotClient telegramClient)
+        {
+            TelegramClient = telegramClient;
+        }
 
         public void Update(Update update, Subscriber subscriber)
         {

@@ -1,0 +1,100 @@
+[
+  {
+    "chatId": 9475148,
+    "sender": {
+      "id": 1044731,
+      "is_bot": false,
+      "first_name": "Erfan",
+      "last_name": "Ahmadi",
+      "username": "e.ahmadi",
+      "language_code": null
+    },
+    "botId": 1,
+    "botUsername": "sample1_bot",
+    "messages": []
+  },
+  {
+    "chatId": 2996393,
+    "sender": {
+      "id": 5618782,
+      "is_bot": false,
+      "first_name": "Ahmadi",
+      "last_name": "Ahmadi",
+      "username": "a.ahmadi",
+      "language_code": null
+    },
+    "botId": 1,
+    "botUsername": "sample1_bot",
+    "messages": []
+  },
+  {
+    "chatId": 4560500,
+    "sender": {
+      "id": 1281499,
+      "is_bot": false,
+      "first_name": "Amir",
+      "last_name": "Akbari",
+      "username": "amirakbari",
+      "language_code": null
+    },
+    "botId": 1,
+    "botUsername": "sample1_bot",
+    "messages": []
+  },
+  {
+    "chatId": 6919614,
+    "sender": {
+      "id": 2051193,
+      "is_bot": false,
+      "first_name": "Javad",
+      "last_name": "Chitgar",
+      "username": "mrjcr",
+      "language_code": null
+    },
+    "botId": 1,
+    "botUsername": "sample1_bot",
+    "messages": []
+  },
+  {
+    "chatId": 5513940,
+    "sender": {
+      "id": 3790534,
+      "is_bot": false,
+      "first_name": "Arman",
+      "last_name": "Davod",
+      "username": "a.dov",
+      "language_code": null
+    },
+    "botId": 1,
+    "botUsername": "sample1_bot",
+    "messages": []
+  },
+  {
+    "chatId": 8194726,
+    "sender": {
+      "id": 9410725,
+      "is_bot": false,
+      "first_name": "Supporter1",
+      "last_name": "",
+      "username": "supp1",
+      "language_code": null
+    },
+    "botId": 1,
+    "botUsername": "sample1_bot",
+    "messages": []
+  },
+  {
+    "chatId": 6151721,
+    "sender": {
+      "id": 6916844,
+      "is_bot": false,
+      "first_name": "Supporter2",
+      "last_name": "",
+      "username": "supp2",
+      "language_code": null
+    },
+    "botId": 1,
+    "botUsername": "sample1_bot",
+    "messages": []
+  }
+]

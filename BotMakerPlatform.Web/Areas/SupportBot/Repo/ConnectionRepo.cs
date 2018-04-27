@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using BotMakerPlatform.Web.Areas.SupportBot.Record;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
 {
     public class ConnectionRepo
     {
-        private static readonly List<Connection> connections = new List<Connection>();
+        private static readonly List<ConnectionRecord> Connections = new List<ConnectionRecord>();
 
         private int BotInstanceId { get; }
 
@@ -14,20 +15,41 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
             BotInstanceId = botInstanceId;
         }
 
-        public IEnumerable<Connection> GetAll()
+        public IEnumerable<ConnectionRecord> GetAll()
         {
-            return connections.Where(x => x.BotInstanceId == BotInstanceId);
+            return Connections.Where(x => x.BotInstanceId == BotInstanceId);
         }
 
-        public void Add(Connection connection)
+        public void Add(Subscriber supporter, Subscriber customer)
         {
-            Remove(connection);
-            connections.Add(new Connection { BotInstanceId = BotInstanceId, UserChatId = connection.UserChatId, SupporterChatId = connection.SupporterChatId });
+            Connections.Add(new ConnectionRecord
+            {
+                BotInstanceId = BotInstanceId,
+                SupporterChatId = supporter.ChatId,
+                CustomerChatId = customer.ChatId
+            });
         }
 
-        public void Remove(Connection connection)
+        public long FindPartyChatId(Subscriber subscriber)
         {
-            connections.RemoveAll(x => x.BotInstanceId == BotInstanceId && x.SupporterChatId == connection.SupporterChatId && x.UserChatId == connection.UserChatId);
+            var chatId = subscriber.ChatId;
+
+            var party = Connections.SingleOrDefault(x =>
+                x.BotInstanceId == BotInstanceId &&
+                (x.SupporterChatId == chatId || x.CustomerChatId == chatId)
+            );
+
+            if (party == null)
+                return default(long);
+
+            return party.SupporterChatId == chatId
+                ? party.CustomerChatId
+                : party.SupporterChatId;
+        }
+
+        public void RemoveByCustomer(Subscriber customer)
+        {
+            Connections.RemoveAll(x => x.CustomerChatId == customer.ChatId);
         }
     }
 }

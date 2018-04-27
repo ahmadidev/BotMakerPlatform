@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System.Linq;
+using BotMakerPlatform.Web.Areas.SupportBot.Manager;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
-using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -11,50 +10,55 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
     {
         public int Id { get; set; }
 
-        public ITelegramBotClient TelegramClient { get; set; }
+        private WaitingManager WaitingManager { get; }
+        private SupporterRepo SupporterRepo { get; }
+        private ConnectionManager ConnectionManager { get; }
 
-        public IEnumerable<Subscriber> Subscribers { get; set; }
-
-        public IEnumerable<Subscriber> Supporters { get; set; }
-
-        public RequestManager RequestManager { get; set; }
+        public SupportBotInstance(
+            WaitingManager waitingManager,
+            SupporterRepo supporterRepo,
+            ConnectionManager connectionManager)
+        {
+            WaitingManager = waitingManager;
+            SupporterRepo = supporterRepo;
+            ConnectionManager = connectionManager;
+        }
 
         public void Update(Update update, Subscriber subscriber)
         {
             if (update.Type != UpdateType.MessageUpdate)
                 return;
 
-            var supporterRepo = new SupporterRepo(Id);
-            Supporters = supporterRepo.GetAll();
-            
-            RequestManager = new RequestManager(Id, TelegramClient, Supporters);
-
-            Web.Controllers.HomeController.LogRecords.Add(subscriber.Username + " : " + update.Message.Text);
-
             if (IsSupporter(subscriber))
                 HandleSupporterMessage(update, subscriber);
             else
-                HandleUserMessage(update, subscriber);
+                HandleCustomerMessage(update, subscriber);
         }
 
         public bool IsSupporter(Subscriber subscriber)
         {
-            return Supporters.Any(supporter => supporter.ChatId == subscriber.ChatId);
-        }
-
-        private void HandleUserMessage(Update update, Subscriber subscriber)
-        {
-            if (update.Message.Text == "/connect")
-                RequestManager.RequestConnect(update, subscriber);
-            else if (update.Message.Text == "/end")
-                RequestManager.RequestEnd(update, subscriber);
-            else
-                RequestManager.RequestMessage(update, subscriber);
+            return SupporterRepo.GetAll().Any(supporter => supporter.ChatId == subscriber.ChatId);
         }
 
         private void HandleSupporterMessage(Update update, Subscriber supporter)
         {
-            RequestManager.RequestMessage(update, supporter);
+            ConnectionManager.Direct(supporter, update);
+        }
+
+        private void HandleCustomerMessage(Update update, Subscriber subscriber)
+        {
+            switch (update.Message.Text)
+            {
+                case "/connect":
+                    WaitingManager.AddToQueue(subscriber);
+                    break;
+                case "/end":
+                    ConnectionManager.Disconnect(subscriber);
+                    break;
+                default:
+                    ConnectionManager.Direct(subscriber, update);
+                    break;
+            }
         }
     }
 }

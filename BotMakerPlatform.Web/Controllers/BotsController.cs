@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Web.Mvc;
 using Autofac;
+using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.CriticalDtos;
 using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNet.Identity;
@@ -29,7 +30,7 @@ namespace BotMakerPlatform.Web.Controllers
             ITelegramBotClient telegramClient;
 
             //TODO: Make sure don't leak
-            using (var scope = IocConfig.Container.BeginLifetimeScope())
+            using (var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag))
                 telegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", token));
 
             var result = telegramClient.GetMeAsync().Result;

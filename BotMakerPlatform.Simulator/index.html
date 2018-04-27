@@ -99,6 +99,10 @@
             New Chat
         </button>
 
+        <button type="button" class="btn btn-primary broadcast-message">
+            Broadcast
+        </button>
+
         <!-- Modal -->
         <div class="modal fade" id="newChatModal" tabindex="-1" role="dialog" aria-labelledby="newChatModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
@@ -193,6 +197,21 @@
                     })
                     .fail(function () {
                         alert('Add bot failed.');
+                    });
+            });
+
+            $('.broadcast-message').click(function() {
+                var message = prompt('Enter your message:');
+                
+                $.post('/api/Chats/SendBroadcastMessage',
+                        {
+                            text: message
+                        })
+                    .done(function () {
+                        reloadChats();
+                    })
+                    .fail(function () {
+                        alert('Send message failed.');
                     });
             });
 
