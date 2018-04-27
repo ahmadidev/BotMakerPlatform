@@ -37,6 +37,8 @@ namespace BotMakerPlatform.Web.Controllers
                 var botInstance = (IBotInstance)scope.Resolve(Type.GetType(typeName));
                 botInstance.Id = botInstanceRecord.Id;
 
+                SubscriberRepo = scope.Resolve<SubscriberRepo>();
+
                 //TODO: We assume update is always a message
                 var subscriber = GetSubscriber(webhookUpdateDto.Update.Message.Chat.Id) ?? AddSubscriber(webhookUpdateDto.Update);
                 botInstance.Update(webhookUpdateDto.Update, subscriber);
