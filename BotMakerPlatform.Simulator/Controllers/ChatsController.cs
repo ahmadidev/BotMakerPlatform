@@ -117,7 +117,7 @@ namespace BotMakerPlatform.Simulator.Controllers
 
             var webhookUrl = botInstance.WebhookUrl;
 
-            using (var httpClient = new HttpClient())
+            using (var httpClient = new HttpClient { Timeout = TimeSpan.FromHours(1) })
             {
                 chat.Messages.Add(new ChatModel.ChatMessage
                 {

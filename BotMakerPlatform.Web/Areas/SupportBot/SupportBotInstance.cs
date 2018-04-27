@@ -35,9 +35,9 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
                 HandleCustomerMessage(update, subscriber);
         }
 
-        public bool IsSupporter(Subscriber subscriber)
+        public bool IsSupporter(Subscriber customer)
         {
-            return SupporterRepo.GetAll().Any(supporter => supporter.ChatId == subscriber.ChatId);
+            return SupporterRepo.GetAll().Any(supporter => supporter.ChatId == customer.ChatId);
         }
 
         private void HandleSupporterMessage(Update update, Subscriber supporter)
@@ -45,18 +45,21 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             ConnectionManager.Direct(supporter, update);
         }
 
-        private void HandleCustomerMessage(Update update, Subscriber subscriber)
+        private void HandleCustomerMessage(Update update, Subscriber customer)
         {
             switch (update.Message.Text)
             {
                 case "/connect":
-                    WaitingManager.AddToQueue(subscriber);
+                    WaitingManager.AddToQueue(customer);
+                    break;
+                case "/cancel":
+                    WaitingManager.Cancel(customer);
                     break;
                 case "/end":
-                    ConnectionManager.Disconnect(subscriber);
+                    ConnectionManager.Disconnect(customer);
                     break;
                 default:
-                    ConnectionManager.Direct(subscriber, update);
+                    ConnectionManager.Direct(customer, update);
                     break;
             }
         }

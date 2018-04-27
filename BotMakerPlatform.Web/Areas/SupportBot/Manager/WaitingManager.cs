@@ -56,8 +56,27 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             }
         }
 
+        public void Cancel(Subscriber customer)
+        {
+            if (!WaitingQueueRepo.HasWaiter(customer))
+            {
+                TelegramClient.SendTextMessageAsync(customer.ChatId, "You're not In Queue.");
+                return;
+            }
+
+            var removedPosition = WaitingQueueRepo.GetPosition(customer);
+            WaitingQueueRepo.Remove(customer);
+            TelegramClient.SendTextMessageAsync(customer.ChatId, "You're not In Queue Anymore.");
+
+            var waiters = WaitingQueueRepo.GetAll().ToList();
+            var waitersToNotifyChatIds = waiters.Skip(removedPosition - 1);
+            foreach (var chatId in waitersToNotifyChatIds)
+                TelegramClient.SendTextMessageAsync(chatId, $"You're Number {waiters.IndexOf(chatId) + 1} In Queue.");
+        }
+
         public void CustomerDisconnected()
         {
+            //TODO: Get first and if connect, then remove from queue
             var customerChatId = WaitingQueueRepo.Dequeue();
 
             if (customerChatId == default(long))
