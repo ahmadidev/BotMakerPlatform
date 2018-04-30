@@ -1,4 +1,5 @@
-﻿using BotMakerPlatform.Web;
+﻿using System;
+using BotMakerPlatform.Web;
 using Microsoft.AspNet.Identity;
 using Microsoft.Owin;
 using Microsoft.Owin.Security.Cookies;
@@ -6,6 +7,7 @@ using Microsoft.Owin.Security.Google;
 using Owin;
 using System.Web.Mvc;
 using System.Web.Routing;
+using Hangfire;
 using Microsoft.Owin.Security;
 
 [assembly: OwinStartup(typeof(Startup))]
@@ -63,6 +65,12 @@ namespace BotMakerPlatform.Web
             //    await next.Invoke();
             //});
 
+            GlobalConfiguration.Configuration.UseSqlServerStorage("DefaultConnectionString");
+
+            app.UseHangfireDashboard();
+            app.UseHangfireServer();
+
+            RecurringJob.AddOrUpdate(() => Console.WriteLine("Daily Job"), Cron.Minutely);
         }
     }
 }
