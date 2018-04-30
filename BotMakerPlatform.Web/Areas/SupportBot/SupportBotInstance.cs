@@ -13,17 +13,20 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         private WaitingManager WaitingManager { get; }
         private SupporterRepo SupporterRepo { get; }
+        private SettingRepo SettingRepo { get; }
         private ConnectionManager ConnectionManager { get; }
         private ITelegramBotClient TelegramClient { get; }
 
         public SupportBotInstance(
             WaitingManager waitingManager,
             SupporterRepo supporterRepo,
+            SettingRepo settingRepo,
             ConnectionManager connectionManager,
             ITelegramBotClient telegramClient)
         {
             WaitingManager = waitingManager;
             SupporterRepo = supporterRepo;
+            SettingRepo = settingRepo;
             ConnectionManager = connectionManager;
             TelegramClient = telegramClient;
         }
@@ -54,7 +57,8 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             switch (update.Message.Text)
             {
                 case "/start":
-                    TelegramClient.SendTextMessageAsync(customer.ChatId, "Welcome to your support!\nWe never leave you alone😊");
+                    const string defaultWelcomeMessage = "Welcome to your support!\nWe never leave you alone😊";
+                    TelegramClient.SendTextMessageAsync(customer.ChatId, SettingRepo.GetWelcomeMessage() ?? defaultWelcomeMessage);
                     break;
                 case "/connect":
                     WaitingManager.AddToQueue(customer);

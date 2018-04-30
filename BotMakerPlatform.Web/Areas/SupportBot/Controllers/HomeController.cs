@@ -7,9 +7,12 @@ using BotMakerPlatform.Web.BotModule;
 namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
 {
     public class HomeController : BaseController
-    { 
+    {
         public ActionResult Index()
         {
+            const string defaultWelcomeMessage = "Welcome to your support!\nWe never leave you alone😊";
+            var settingRepo = new SettingRepo(BotInstanceId);
+
             var supporters = new SupporterRepo(BotInstanceId).GetAll();
             var subscribers = Subscribers
                 .GroupJoin(supporters,
@@ -26,7 +29,11 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
                 )
                 .ToList();
 
-            return View(subscribers);
+            return View(new HomeViewModel
+            {
+                Subscribers = subscribers,
+                WelcomeMessage = settingRepo.GetWelcomeMessage() ?? defaultWelcomeMessage
+            });
         }
 
         [HttpPost]
@@ -46,6 +53,15 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
         {
             var supporterRepo = new SupporterRepo(BotInstanceId);
             supporterRepo.Remove(chatId);
+
+            return Redirect(Request.UrlReferrer?.ToString());
+        }
+
+        [HttpPost]
+        public ActionResult SetWelcomeMessage(string welcomeMessage)
+        {
+            var settingRepo = new SettingRepo(BotInstanceId);
+            settingRepo.SetWelcomeMessage(welcomeMessage);
 
             return Redirect(Request.UrlReferrer?.ToString());
         }

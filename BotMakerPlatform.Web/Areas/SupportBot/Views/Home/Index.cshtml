@@ -1,4 +1,4 @@
-﻿@model List<BotMakerPlatform.Web.Areas.SupportBot.Models.SubscriberViewModel>
+﻿@model BotMakerPlatform.Web.Areas.SupportBot.Models.HomeViewModel
 
 @{
     ViewBag.Title = "SupportBot - Home";
@@ -6,37 +6,51 @@
 
 <table class="table">
     <thead>
-    <tr>
-        <th scope="col">#</th>
-        <th scope="col">Username</th>
-        <th scope="col">Is Supporter</th>
-    </tr>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Username</th>
+            <th scope="col">Is Supporter</th>
+        </tr>
     </thead>
     <tbody>
-    @foreach (var subscriber in Model)
-    {
-        <tr>
-            <th scope="row">@(Model.IndexOf(subscriber) + 1)</th>
-            <td>@subscriber.Username</td>
-            <td>
-                @if (subscriber.IsSupporter)
-                {
-                    <text>✅</text>
+        @foreach (var subscriber in Model.Subscribers)
+        {
+            <tr>
+                <th scope="row">@(Model.Subscribers.IndexOf(subscriber) + 1)</th>
+                <td>@subscriber.Username</td>
+                <td>
+                    @if (subscriber.IsSupporter)
+                    {
+                        <text>✅</text>
 
-                    using (Html.BeginForm("RemoveSupporter", "Home", new { subscriber.ChatId }))
-                    {
-                        <button>Remove Supporter</button>
+                        using (Html.BeginForm("RemoveSupporter", "Home", new { subscriber.ChatId }))
+                        {
+                            <button>Remove Supporter</button>
+                        }
                     }
-                }
-                else
-                {
-                    using (Html.BeginForm("MakeSupporter", "Home", new { subscriber.ChatId }))
+                    else
                     {
-                        <button>Make Supporter</button>
+                        using (Html.BeginForm("MakeSupporter", "Home", new { subscriber.ChatId }))
+                        {
+                            <button>Make Supporter</button>
+                        }
                     }
-                }
-            </td>
-        </tr>
-    }
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
+
+<hr />
+<fieldset>
+    <legend>Welcome message</legend>
+    @using (Html.BeginForm("SetWelcomeMessage", "Home"))
+    {
+        <div class="form-group">
+            <label for="WelcomeMessage">Welcome message</label>
+            <textarea type="text" class="form-control" id="WelcomeMessage" name="WelcomeMessage" aria-describedby="WelcomeMessageHelp" placeholder="Enter Welcom Message">@Model.WelcomeMessage</textarea>
+            <small id="WelcomeMessageHelp" class="form-text text-muted">It will sent back to user when received /start command.</small>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    }
+</fieldset>

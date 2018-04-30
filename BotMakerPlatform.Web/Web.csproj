@@ -213,6 +213,9 @@
     <Compile Include="Areas\StoreBot\StoreBotAreaRegistration.cs" />
     <Compile Include="Areas\StoreBot\StoreBotInstance.cs" />
     <Compile Include="Areas\SupportBot\ConnectionNotifier.cs" />
+    <Compile Include="Areas\SupportBot\Models\HomeViewModel.cs" />
+    <Compile Include="Areas\SupportBot\Repo\SettingRepo.cs" />
+    <Compile Include="Areas\SupportBot\Record\SettingRecord.cs" />
     <Compile Include="Areas\SupportBot\Record\ConnectionRecord.cs" />
     <Compile Include="Areas\SupportBot\Manager\ConnectionManager.cs" />
     <Compile Include="Areas\SupportBot\Controllers\HomeController.cs" />
