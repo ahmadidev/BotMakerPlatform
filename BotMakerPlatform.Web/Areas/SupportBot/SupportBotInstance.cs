@@ -1,6 +1,7 @@
-using System.Linq;
+﻿using System.Linq;
 using BotMakerPlatform.Web.Areas.SupportBot.Manager;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -13,15 +14,18 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         private WaitingManager WaitingManager { get; }
         private SupporterRepo SupporterRepo { get; }
         private ConnectionManager ConnectionManager { get; }
+        private ITelegramBotClient TelegramClient { get; }
 
         public SupportBotInstance(
             WaitingManager waitingManager,
             SupporterRepo supporterRepo,
-            ConnectionManager connectionManager)
+            ConnectionManager connectionManager,
+            ITelegramBotClient telegramClient)
         {
             WaitingManager = waitingManager;
             SupporterRepo = supporterRepo;
             ConnectionManager = connectionManager;
+            TelegramClient = telegramClient;
         }
 
         public void Update(Update update, Subscriber subscriber)
@@ -49,6 +53,9 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         {
             switch (update.Message.Text)
             {
+                case "/start":
+                    TelegramClient.SendTextMessageAsync(customer.ChatId, "Welcome to your support!\nWe never leave you alone😊");
+                    break;
                 case "/connect":
                     WaitingManager.AddToQueue(customer);
                     break;
