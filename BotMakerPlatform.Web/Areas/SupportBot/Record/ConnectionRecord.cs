@@ -1,4 +1,6 @@
-﻿namespace BotMakerPlatform.Web.Areas.SupportBot.Record
+﻿using System;
+
+namespace BotMakerPlatform.Web.Areas.SupportBot.Record
 {
     public class ConnectionRecord
     {
@@ -7,5 +9,7 @@
         public long CustomerChatId { get; set; }
 
         public long SupporterChatId { get; set; }
+
+        public DateTime CreatedAt { get; set; }
     }
 }

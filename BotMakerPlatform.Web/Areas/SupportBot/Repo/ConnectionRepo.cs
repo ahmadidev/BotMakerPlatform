@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BotMakerPlatform.Web.Areas.SupportBot.Record;
 
@@ -26,7 +27,8 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
             {
                 BotInstanceId = BotInstanceId,
                 SupporterChatId = supporter.ChatId,
-                CustomerChatId = customer.ChatId
+                CustomerChatId = customer.ChatId,
+                CreatedAt = DateTime.UtcNow
             });
         }
 
