@@ -227,6 +227,7 @@
     <Compile Include="Areas\SupportBot\Repo\ConnectionRepo.cs" />
     <Compile Include="Areas\SupportBot\Repo\SupporterRepo.cs" />
     <Compile Include="Areas\SupportBot\Models\SubscriberViewModel.cs" />
+    <Compile Include="Areas\SupportBot\Manager\StateManager.cs" />
     <Compile Include="Areas\SupportBot\SupportBotDefinition.cs" />
     <Compile Include="Areas\SupportBot\SupportBotAreaRegistration.cs" />
     <Compile Include="Areas\SupportBot\SupportBotInstance.cs" />

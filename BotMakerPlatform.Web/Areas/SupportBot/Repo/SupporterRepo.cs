@@ -29,5 +29,10 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
         {
             Supporters.RemoveAll(x => x.BotInstanceId == BotInstanceId && x.ChatId == chatId);
         }
+
+        public bool IsSupporter(Subscriber subscriber)
+        {
+            return GetAll().Any(x => x.ChatId == subscriber.ChatId);
+        }
     }
 }

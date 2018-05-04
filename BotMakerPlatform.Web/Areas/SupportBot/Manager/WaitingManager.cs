@@ -9,6 +9,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
     {
         private WaitingQueueRepo WaitingQueueRepo { get; }
         private ConnectionManager ConnectionManager { get; }
+        private StateManager StateManager { get; }
         private ITelegramBotClient TelegramClient { get; }
         private SubscriberRepo SubscriberRepo { get; }
 
@@ -17,12 +18,14 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             ConnectionManager connectionManager,
             ITelegramBotClient telegramClient,
             SubscriberRepo subscriberRepo,
+            StateManager stateManager,
             ConnectionNotifier connectionNotifier)
         {
             WaitingQueueRepo = waitingQueueRepo;
             ConnectionManager = connectionManager;
             TelegramClient = telegramClient;
             SubscriberRepo = subscriberRepo;
+            StateManager = stateManager;
 
             connectionNotifier.NotifyOnCustomerDisconnect(CustomerDisconnected);
         }
@@ -31,13 +34,15 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
         {
             if (ConnectionManager.HasCustomerConnection(customer))
             {
-                TelegramClient.SendTextMessageAsync(customer.ChatId, "You are already connected.");
+                TelegramClient.SendTextMessageAsync(customer.ChatId, "You are already connected.",
+                    replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
                 return;
             }
 
             if (WaitingQueueRepo.HasWaiter(customer))
             {
-                TelegramClient.SendTextMessageAsync(customer.ChatId, $"You're Number {WaitingQueueRepo.GetPosition(customer)} In Queue.");
+                TelegramClient.SendTextMessageAsync(customer.ChatId, $"You're Number {WaitingQueueRepo.GetPosition(customer)} In Queue.",
+                    replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
                 return;
             }
 
@@ -46,13 +51,15 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
                 if (!ConnectionManager.TryConnect(customer))
                 {
                     WaitingQueueRepo.Enqueue(customer);
-                    TelegramClient.SendTextMessageAsync(customer.ChatId, $"You're Number {WaitingQueueRepo.GetPosition(customer)} In Queue.");
+                    TelegramClient.SendTextMessageAsync(customer.ChatId, $"You're Number {WaitingQueueRepo.GetPosition(customer)} In Queue.",
+                        replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
                 }
             }
             else
             {
                 WaitingQueueRepo.Enqueue(customer);
-                TelegramClient.SendTextMessageAsync(customer.ChatId, $"You're Number {WaitingQueueRepo.GetPosition(customer)} In Queue.");
+                TelegramClient.SendTextMessageAsync(customer.ChatId, $"You're Number {WaitingQueueRepo.GetPosition(customer)} In Queue.",
+                    replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
             }
         }
 
@@ -60,18 +67,21 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
         {
             if (!WaitingQueueRepo.HasWaiter(customer))
             {
-                TelegramClient.SendTextMessageAsync(customer.ChatId, "You're not In Queue.");
+                TelegramClient.SendTextMessageAsync(customer.ChatId, "You're not In Queue.",
+                    replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
                 return;
             }
 
             var removedPosition = WaitingQueueRepo.GetPosition(customer);
             WaitingQueueRepo.Remove(customer);
-            TelegramClient.SendTextMessageAsync(customer.ChatId, "You're not In Queue Anymore.");
+            TelegramClient.SendTextMessageAsync(customer.ChatId, "You're not In Queue Anymore.",
+                replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
 
             var waiters = WaitingQueueRepo.GetAll().ToList();
             var waitersToNotifyChatIds = waiters.Skip(removedPosition - 1);
             foreach (var chatId in waitersToNotifyChatIds)
-                TelegramClient.SendTextMessageAsync(chatId, $"You're Number {waiters.IndexOf(chatId) + 1} In Queue.");
+                TelegramClient.SendTextMessageAsync(chatId, $"You're Number {waiters.IndexOf(chatId) + 1} In Queue.",
+                    replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
         }
 
         public void CustomerDisconnected()
@@ -88,7 +98,8 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             var waitersChatIds = WaitingQueueRepo.GetAll().ToList();
 
             foreach (var waiterChatId in waitersChatIds)
-                TelegramClient.SendTextMessageAsync(waiterChatId, $"You're Number {waitersChatIds.IndexOf(waiterChatId) + 1} In Queue.");
+                TelegramClient.SendTextMessageAsync(waiterChatId, $"You're Number {waitersChatIds.IndexOf(waiterChatId) + 1} In Queue.",
+                    replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
         }
     }
 }

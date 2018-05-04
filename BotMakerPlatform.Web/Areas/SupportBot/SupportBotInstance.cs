@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using BotMakerPlatform.Web.Areas.SupportBot.Manager;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
 using Telegram.Bot;
@@ -15,6 +16,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         private SupporterRepo SupporterRepo { get; }
         private SettingRepo SettingRepo { get; }
         private ConnectionManager ConnectionManager { get; }
+        private StateManager StateManager { get; }
         private ITelegramBotClient TelegramClient { get; }
 
         public SupportBotInstance(
@@ -22,12 +24,14 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             SupporterRepo supporterRepo,
             SettingRepo settingRepo,
             ConnectionManager connectionManager,
+            StateManager stateManager,
             ITelegramBotClient telegramClient)
         {
             WaitingManager = waitingManager;
             SupporterRepo = supporterRepo;
             SettingRepo = settingRepo;
             ConnectionManager = connectionManager;
+            StateManager = stateManager;
             TelegramClient = telegramClient;
         }
 
@@ -36,15 +40,10 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             if (update.Type != UpdateType.MessageUpdate)
                 return;
 
-            if (IsSupporter(subscriber))
+            if (SupporterRepo.IsSupporter(subscriber))
                 HandleSupporterMessage(update, subscriber);
             else
                 HandleCustomerMessage(update, subscriber);
-        }
-
-        public bool IsSupporter(Subscriber customer)
-        {
-            return SupporterRepo.GetAll().Any(supporter => supporter.ChatId == customer.ChatId);
         }
 
         private void HandleSupporterMessage(Update update, Subscriber supporter)
@@ -56,17 +55,18 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         {
             switch (update.Message.Text)
             {
-                case "/start":
+                case StateManager.StartCommand:
                     const string defaultWelcomeMessage = "Welcome to your support!\nWe never leave you alone😊";
-                    TelegramClient.SendTextMessageAsync(customer.ChatId, SettingRepo.GetWelcomeMessage() ?? defaultWelcomeMessage);
+                    TelegramClient.SendTextMessageAsync(customer.ChatId, SettingRepo.GetWelcomeMessage() ?? defaultWelcomeMessage,
+                        replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
                     break;
-                case "/connect":
+                case StateManager.ConnectCommand:
                     WaitingManager.AddToQueue(customer);
                     break;
-                case "/cancel":
+                case StateManager.CancelCommand:
                     WaitingManager.Cancel(customer);
                     break;
-                case "/end":
+                case StateManager.DisconnectCommand:
                     ConnectionManager.Disconnect(customer);
                     break;
                 default:
