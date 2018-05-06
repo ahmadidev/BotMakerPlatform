@@ -5,5 +5,7 @@
         public int BotInstanceId { get; set; }
 
         public string WelcomeMessage { get; set; }
+
+        public int ExpireMinutes { get; set; }
     }
 }

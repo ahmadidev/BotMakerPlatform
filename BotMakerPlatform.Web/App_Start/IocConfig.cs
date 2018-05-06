@@ -3,7 +3,9 @@ using System.Web;
 using System.Web.Mvc;
 using Autofac;
 using Autofac.Core;
+using Autofac.Core.Lifetime;
 using Autofac.Integration.Mvc;
+using Hangfire;
 using Telegram.Bot;
 
 namespace BotMakerPlatform.Web
@@ -28,27 +30,32 @@ namespace BotMakerPlatform.Web
                     .RegisterType<SimulatorBotClient>()
                     .WithParameter(tokenParameter)
                     .As<ITelegramBotClient>()
-                    .InstancePerRequest();
+                    .InstancePerRequest()
+                    .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
             else
                 builder.RegisterType<TelegramBotClient>()
                     .WithParameter(tokenParameter)
                     .As<ITelegramBotClient>()
-                    .InstancePerRequest();
+                    .InstancePerRequest()
+                    .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
 
             builder
                 .RegisterAssemblyTypes(currentAssembly)
                 .AssignableTo<IBotInstance>()
-                .InstancePerRequest();
+                .InstancePerRequest()
+                .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
 
             builder
                 .RegisterAssemblyTypes(currentAssembly)
                 .Where(x => x.Name.EndsWith("Manager"))
-                .InstancePerRequest();
+                .InstancePerRequest()
+                .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
 
             builder
                 .RegisterAssemblyTypes(currentAssembly)
                 .Where(x => x.Name.EndsWith("Notifier"))
-                .InstancePerRequest();
+                .InstancePerRequest()
+                .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
 
             builder
                 .RegisterAssemblyTypes(currentAssembly)
@@ -56,9 +63,12 @@ namespace BotMakerPlatform.Web
                 .WithParameter(new ResolvedParameter(
                     (info, context) => info.Name == "botInstanceId",
                     (info, context) => HttpContext.Current.Request.GetOwinContext().Get<int>("BotInstanceId")))
-                .InstancePerRequest();
+                .InstancePerRequest()
+                .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
 
             Container = builder.Build();
+
+            GlobalConfiguration.Configuration.UseAutofacActivator(Container);
             DependencyResolver.SetResolver(new AutofacDependencyResolver(Container));
         }
     }

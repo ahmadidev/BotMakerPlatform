@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
-using BotMakerPlatform.Web.Repo;
 
-namespace BotMakerPlatform.Web
+namespace BotMakerPlatform.Web.Repo
 {
     public class BotInstanceRepo
     {

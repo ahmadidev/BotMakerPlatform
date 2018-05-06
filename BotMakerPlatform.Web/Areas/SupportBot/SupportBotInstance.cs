@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using BotMakerPlatform.Web.Areas.SupportBot.Manager;
+﻿using BotMakerPlatform.Web.Areas.SupportBot.Manager;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;

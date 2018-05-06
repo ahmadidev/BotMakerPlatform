@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BotMakerPlatform.Web
+namespace BotMakerPlatform.Web.Repo
 {
     public class BotDefinitionRepo
     {
