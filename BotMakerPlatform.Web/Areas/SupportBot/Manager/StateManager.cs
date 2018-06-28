@@ -14,10 +14,10 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             public const string DisconnectCommand = "/end";
             public const string CancelCommand = "/cancel";
 
-            public static IReplyMarkup Connected => new ReplyKeyboardMarkup(new ReplyKeyboardMarkup[] { DisconnectCommand });
-            public static IReplyMarkup NotConnected => new ReplyKeyboardMarkup(new ReplyKeyboardMarkup[] { ConnectCommand });
-            public static IReplyMarkup InQueue => new ReplyKeyboardMarkup(new ReplyKeyboardMarkup[] { CancelCommand });
-            public static IReplyMarkup Empty => new ReplyKeyboardMarkup();
+            public static IReplyMarkup Connected => new ReplyKeyboardMarkup(new KeyboardButton[] { DisconnectCommand });
+            public static IReplyMarkup NotConnected => new ReplyKeyboardMarkup(new KeyboardButton[] { ConnectCommand });
+            public static IReplyMarkup InQueue => new ReplyKeyboardMarkup(new KeyboardButton[] { CancelCommand });
+            public static IReplyMarkup Empty => new ReplyKeyboardRemove();
         }
 
         private WaitingQueueRepo WaitingQueueRepo { get; }
