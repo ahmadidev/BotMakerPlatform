@@ -1,20 +1,24 @@
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.InlineKeyboardButtons;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
 {
     public class StateManager
     {
-        public const string StartCommand = "/start";
-        public const string ConnectCommand = "/connect";
-        public const string DisconnectCommand = "/end";
-        public const string CancelCommand = "/cancel";
+        public class Keyboards
+        {
+            public const string StartCommand = "/start";
+            public const string ConnectCommand = "/connect";
+            public const string DisconnectCommand = "/end";
+            public const string CancelCommand = "/cancel";
 
-        public static IReplyMarkup ConnectedKeyboardMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { DisconnectCommand }, true, true);
-        public static IReplyMarkup NotConnectedKeyboardMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { ConnectCommand }, true, true);
-        public static IReplyMarkup InQueueKeyboardMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { CancelCommand }, true, true);
-        public static IReplyMarkup EmptyKeyboardMarkup => new ReplyKeyboardRemove();
+            public static IReplyMarkup Connected => new ReplyKeyboardMarkup(new ReplyKeyboardMarkup[] { DisconnectCommand });
+            public static IReplyMarkup NotConnected => new ReplyKeyboardMarkup(new ReplyKeyboardMarkup[] { ConnectCommand });
+            public static IReplyMarkup InQueue => new ReplyKeyboardMarkup(new ReplyKeyboardMarkup[] { CancelCommand });
+            public static IReplyMarkup Empty => new ReplyKeyboardMarkup();
+        }
 
         private WaitingQueueRepo WaitingQueueRepo { get; }
         private ConnectionRepo ConnectionRepo { get; }
@@ -30,16 +34,16 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
         public IReplyMarkup GetCustomerReplyKeyboardMarkup(Subscriber customer)
         {
             if (ConnectionRepo.FindPartyChatId(customer) != default(long))
-                return ConnectedKeyboardMarkup;
+                return Keyboards.Connected;
             else if (WaitingQueueRepo.HasWaiter(customer))
-                return InQueueKeyboardMarkup;
+                return Keyboards.InQueue;
             else
-                return NotConnectedKeyboardMarkup;
+                return Keyboards.NotConnected;
         }
 
         public IReplyMarkup GetSupporterReplyKeyboardMarkup(Subscriber subscriber)
         {
-            return EmptyKeyboardMarkup;
+            return Keyboards.Empty;
         }
     }
 }

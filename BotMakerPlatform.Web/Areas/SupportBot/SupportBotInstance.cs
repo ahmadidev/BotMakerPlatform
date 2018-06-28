@@ -53,18 +53,18 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
         {
             switch (update.Message.Text)
             {
-                case StateManager.StartCommand:
+                case StateManager.Keyboards.StartCommand:
                     const string defaultWelcomeMessage = "Welcome to your support!\nWe never leave you alone😊";
                     TelegramClient.SendTextMessageAsync(customer.ChatId, SettingRepo.GetWelcomeMessage() ?? defaultWelcomeMessage,
                         replyMarkup: StateManager.GetCustomerReplyKeyboardMarkup(customer));
                     break;
-                case StateManager.ConnectCommand:
+                case StateManager.Keyboards.ConnectCommand:
                     WaitingManager.AddToQueue(customer);
                     break;
-                case StateManager.CancelCommand:
+                case StateManager.Keyboards.CancelCommand:
                     WaitingManager.Cancel(customer);
                     break;
-                case StateManager.DisconnectCommand:
+                case StateManager.Keyboards.DisconnectCommand:
                     ConnectionManager.Disconnect(customer);
                     break;
                 default:
