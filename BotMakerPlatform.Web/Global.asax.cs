@@ -28,7 +28,8 @@ namespace BotMakerPlatform.Web
 
         protected void Application_Error(object sender, EventArgs e)
         {
-            HomeController.LogRecords.Add("Error: " + Server.GetLastError().Message);
+            var ex = Server.GetLastError();
+            HomeController.LogRecords.Add("Error: " + ex.Message + " - " + ex.StackTrace);
             Server.ClearError();
         }
 
