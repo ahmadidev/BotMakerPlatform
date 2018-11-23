@@ -148,6 +148,7 @@
     <Content Include="App_Data\BotMakerPlatform_log.ldf">
       <DependentUpon>BotMakerPlatform.mdf</DependentUpon>
     </Content>
+    <Content Include="Areas\EjooUtilBot\Views\web.config" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />
     <Content Include="Content\bootstrap-reboot.css" />
@@ -213,6 +214,9 @@
     <Compile Include="App_Start\IocConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\SchedulerConfig.cs" />
+    <Compile Include="Areas\EjooUtilBot\EjooUtilAreaRegistration.cs" />
+    <Compile Include="Areas\EjooUtilBot\EjooUtilBotDefinition.cs" />
+    <Compile Include="Areas\EjooUtilBot\EjooUtilBotInstance.cs" />
     <Compile Include="Areas\StoreBot\Controllers\HomeController.cs" />
     <Compile Include="Areas\StoreBot\Controllers\StoreAdminRepo.cs" />
     <Compile Include="Areas\StoreBot\Controllers\StoreSubscriber.cs" />
@@ -282,6 +286,8 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Areas\EjooUtilBot\Controllers\" />
+    <Folder Include="Areas\EjooUtilBot\Models\" />
     <Folder Include="Areas\StoreBot\Models\" />
   </ItemGroup>
   <ItemGroup>
