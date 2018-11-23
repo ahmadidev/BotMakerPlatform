@@ -18,7 +18,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
         public void Update(Update update, Subscriber subscriber)
         {
-            if (update.Type != UpdateType.MessageUpdate)
+            if (update.Type != UpdateType.Message)
                 return;
 
             var isAdmin = StoreAdminRepo.StoreAdmins.Any(x => x.ChatId == subscriber.ChatId);
@@ -29,7 +29,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             }
             else
             {
-                TelegramClient.SendTextMessageAsync(subscriber.ChatId, "Selec your category (masalan)...");
+                TelegramClient.SendTextMessageAsync(subscriber.ChatId, "Select your category (masalan)...");
             }
         }
     }

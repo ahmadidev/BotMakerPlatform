@@ -3,6 +3,7 @@ using BotMakerPlatform.Web.Areas.SupportBot.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
 {
@@ -65,59 +66,72 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
 
                 switch (message.Type)
                 {
-                    case MessageType.TextMessage:
+                    case MessageType.Text:
                         if (message.Text != null)
                             TelegramClient.SendTextMessageAsync(partyChatId, message.Text, replyMarkup: replyKeyboardMarkup);
                         break;
-                    case MessageType.PhotoMessage:
+                    case MessageType.Photo:
                         fileId = message.Photo.Last().FileId;
-                        TelegramClient.SendPhotoAsync(partyChatId, new FileToSend(fileId), message.Caption ?? "",
+                        TelegramClient.SendPhotoAsync(partyChatId, new InputOnlineFile(fileId), message.Caption ?? "",
                             replyMarkup: replyKeyboardMarkup);
                         break;
-                    case MessageType.AudioMessage:
+                    case MessageType.Audio:
                         fileId = message.Audio.FileId;
-                        TelegramClient.SendAudioAsync(partyChatId, new FileToSend(fileId), message.Caption ?? "",
+                        TelegramClient.SendAudioAsync(partyChatId, new InputOnlineFile(fileId), message.Caption ?? "", ParseMode.Default,
                             message.Audio.Duration, message.Audio.Performer ?? "", message.Audio.Title ?? "",
                             replyMarkup: replyKeyboardMarkup);
                         break;
-                    case MessageType.VideoMessage:
+                    case MessageType.Video:
                         fileId = message.Video.FileId;
-                        TelegramClient.SendVideoAsync(partyChatId, new FileToSend(fileId), caption: message.Caption ?? "",
+                        TelegramClient.SendVideoAsync(partyChatId, new InputOnlineFile(fileId), caption: message.Caption ?? "",
                             replyMarkup: replyKeyboardMarkup);
                         break;
-                    case MessageType.VoiceMessage:
+                    case MessageType.Voice:
                         fileId = message.Voice.FileId;
-                        TelegramClient.SendVoiceAsync(partyChatId, new FileToSend(fileId), message.Caption ?? "",
+                        TelegramClient.SendVoiceAsync(partyChatId, new InputOnlineFile(fileId), message.Caption ?? "",
                             replyMarkup: replyKeyboardMarkup);
                         break;
-                    case MessageType.DocumentMessage:
+                    case MessageType.Document:
                         fileId = message.Document.FileId;
-                        TelegramClient.SendDocumentAsync(partyChatId, new FileToSend(fileId), message.Caption ?? "",
+                        TelegramClient.SendDocumentAsync(partyChatId, new InputOnlineFile(fileId), message.Caption ?? "",
                             replyMarkup: replyKeyboardMarkup);
                         break;
-                    case MessageType.StickerMessage:
+                    case MessageType.Sticker:
                         fileId = message.Sticker.FileId;
-                        TelegramClient.SendStickerAsync(partyChatId, new FileToSend(fileId),
+                        TelegramClient.SendStickerAsync(partyChatId, new InputOnlineFile(fileId),
                             replyMarkup: replyKeyboardMarkup);
                         break;
-                    case MessageType.LocationMessage:
+                    case MessageType.Location:
                         TelegramClient.SendLocationAsync(partyChatId, message.Location.Latitude, message.Location.Longitude,
                             replyMarkup: replyKeyboardMarkup);
                         break;
-                    case MessageType.VideoNoteMessage:
+                    case MessageType.VideoNote:
                         fileId = message.VideoNote.FileId;
-                        TelegramClient.SendVideoNoteAsync(partyChatId, new FileToSend(fileId),
+                        TelegramClient.SendVideoNoteAsync(partyChatId, new InputOnlineFile(fileId),
                             message.VideoNote.Duration, message.VideoNote.Length, replyMarkup: replyKeyboardMarkup);
                         break;
-                    case MessageType.ContactMessage:
-                    case MessageType.ServiceMessage:
-                    case MessageType.VenueMessage:
-                    case MessageType.GameMessage:
+                    case MessageType.Contact:
+                    case MessageType.Venue:
+                    case MessageType.Game:
                     case MessageType.Invoice:
                     case MessageType.SuccessfulPayment:
-                    case MessageType.UnknownMessage:
+                    case MessageType.Unknown:
                         TelegramClient.SendTextMessageAsync(subscriber.ChatId,
                             $"Message type {message.Type} is not supported.", replyMarkup: replyKeyboardMarkup);
+                        break;
+                    case MessageType.WebsiteConnected:
+                    case MessageType.ChatMembersAdded:
+                    case MessageType.ChatMemberLeft:
+                    case MessageType.ChatTitleChanged:
+                    case MessageType.ChatPhotoChanged:
+                    case MessageType.MessagePinned:
+                    case MessageType.ChatPhotoDeleted:
+                    case MessageType.GroupCreated:
+                    case MessageType.SupergroupCreated:
+                    case MessageType.ChannelCreated:
+                    case MessageType.MigratedToSupergroup:
+                    case MessageType.MigratedFromGroup:
+                    default:
                         break;
                 }
             }

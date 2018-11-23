@@ -35,7 +35,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
 
         public void Update(Update update, Subscriber subscriber)
         {
-            if (update.Type != UpdateType.MessageUpdate)
+            if (update.Type != UpdateType.Message)
                 return;
 
             if (SupporterRepo.IsSupporter(subscriber))
