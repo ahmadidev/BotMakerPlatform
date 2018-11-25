@@ -3,6 +3,7 @@ using BotMakerPlatform.Web.Areas.SupportBot.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 
 namespace BotMakerPlatform.Web.Areas.EjooUtilBot
 {
@@ -17,20 +18,16 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         private StateManager StateManager { get; }
         private ITelegramBotClient TelegramClient { get; }
 
+
+        private IronPdf.HtmlToPdf Renderer { get; }
+
         public EjooUtilBotInstance(
-            WaitingManager waitingManager,
-            SupporterRepo supporterRepo,
             SettingRepo settingRepo,
-            ConnectionManager connectionManager,
-            StateManager stateManager,
             ITelegramBotClient telegramClient)
         {
-            WaitingManager = waitingManager;
-            SupporterRepo = supporterRepo;
             SettingRepo = settingRepo;
-            ConnectionManager = connectionManager;
-            StateManager = stateManager;
             TelegramClient = telegramClient;
+            Renderer = new IronPdf.HtmlToPdf();
         }
 
         public void Update(Update update, Subscriber subscriber)
@@ -39,6 +36,14 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                 return;
 
             TelegramClient.SendTextMessageAsync(subscriber.ChatId, $"سلام {subscriber.FirstName}\nدر حال توسعه ایم...");
+
+            var PDF = Renderer.RenderUrlAsPdf("https://en.wikipedia.org/wiki/Portable_Document_Format");
+
+            if (update.Message.Type == MessageType.Photo)
+            {
+                TelegramClient.SendTextMessageAsync(subscriber.ChatId, "Photooooo");
+                TelegramClient.SendDocumentAsync(subscriber.ChatId, new InputOnlineFile(PDF.Stream));
+            }
         }
     }
 }
