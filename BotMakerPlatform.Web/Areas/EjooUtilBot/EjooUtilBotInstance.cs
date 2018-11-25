@@ -1,9 +1,9 @@
 ﻿using BotMakerPlatform.Web.Areas.SupportBot.Manager;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
+using BotMakerPlatform.Web.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.InputFiles;
 
 namespace BotMakerPlatform.Web.Areas.EjooUtilBot
 {
@@ -19,15 +19,12 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         private ITelegramBotClient TelegramClient { get; }
 
 
-        private IronPdf.HtmlToPdf Renderer { get; }
-
         public EjooUtilBotInstance(
             SettingRepo settingRepo,
             ITelegramBotClient telegramClient)
         {
             SettingRepo = settingRepo;
             TelegramClient = telegramClient;
-            Renderer = new IronPdf.HtmlToPdf();
         }
 
         public void Update(Update update, Subscriber subscriber)
@@ -37,12 +34,19 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
 
             TelegramClient.SendTextMessageAsync(subscriber.ChatId, $"سلام {subscriber.FirstName}\nدر حال توسعه ایم...");
 
-            var PDF = Renderer.RenderUrlAsPdf("https://en.wikipedia.org/wiki/Portable_Document_Format");
-
             if (update.Message.Type == MessageType.Photo)
             {
-                TelegramClient.SendTextMessageAsync(subscriber.ChatId, "Photooooo");
-                TelegramClient.SendDocumentAsync(subscriber.ChatId, new InputOnlineFile(PDF.Stream));
+                for (int i = 0; i < update.Message.Photo.Length; i++)
+                {
+
+                    var fileId = update.Message.Photo[i].FileId;
+                    var file = TelegramClient.GetFileAsync(fileId).Result;
+                    //TODO: get token
+                    var url = "https://api.telegram.org/file/bot" + "Kossheer Token" + "/" + file.FilePath;
+                    // PDF = Renderer.RenderUrlAsPdf("")
+                }
+
+                //TelegramClient.SendDocumentAsync(subscriber.ChatId, new InputOnlineFile(PDF.Stream));
             }
         }
     }
