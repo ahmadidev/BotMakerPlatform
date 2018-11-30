@@ -33,7 +33,11 @@ namespace BotMakerPlatform.Web.Controllers
             var webhookUpdateDto = new WebhookUpdateDto { Update = update, BotInstanceId = botInstanceId, Secret = secret };
             HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {update.Type}.");
 
-            var botInstanceRecord = BotInstanceRepo.BotInstanceRecords.SingleOrDefault(x => x.Id == webhookUpdateDto.BotInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
+            //var botInstanceRecord = BotInstanceRepo.BotInstanceRecords.SingleOrDefault(x => x.Id == webhookUpdateDto.BotInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
+            BotInstanceRecord botInstanceRecord;
+            using (var db = new Db())
+                botInstanceRecord = db.BotInstanceRecords.SingleOrDefault(x => x.Id == botInstanceId);
+
             if (botInstanceRecord == null)
                 throw new HttpException((int)HttpStatusCode.BadRequest, "BotUniqueName or Secret is invalid.");
 

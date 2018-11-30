@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web.Mvc;
 using Autofac;
@@ -27,7 +28,11 @@ namespace BotMakerPlatform.Web.BotModule
         {
             var botUniqueName = filterContext.RouteData.DataTokens["area"].ToString();
             UserId = User.Identity.GetUserId();
-            var botInstance = BotInstanceRepo.BotInstanceRecords.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
+            //var botInstance = BotInstanceRepo.BotInstanceRecords.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
+
+            BotInstanceRecord botInstance;
+            using (var db = new Db())
+                botInstance = db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == botUniqueName);
 
             //TODO: Make sure don't leak
             using (var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag))

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Data.Entity;
 using System.Linq;
+using System.Web.Hosting;
 using System.Web.Mvc;
 using Autofac;
 using Autofac.Core.Lifetime;
@@ -16,7 +18,10 @@ namespace BotMakerPlatform.Web.Controllers
         public ActionResult Index(string uniqueName)
         {
             var bot = BotDefinitionRepo.BotDefinitions.Single(x => x.UniqueName == uniqueName);
-            var botInstance = BotInstanceRepo.BotInstanceRecords.FirstOrDefault(x => x.BotUniqueName == uniqueName && x.UserId == User.Identity.GetUserId());
+            //var botInstance = BotInstanceRepo.BotInstanceRecords.FirstOrDefault(x => x.BotUniqueName == uniqueName && x.UserId == User.Identity.GetUserId());
+            BotInstanceRecord botInstance;
+            using (var db = new Db())
+                botInstance = db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == uniqueName);
 
             ViewBag.HasIt = botInstance != null;
             ViewBag.BotInstance = botInstance;
@@ -55,17 +60,22 @@ namespace BotMakerPlatform.Web.Controllers
                 if (botInfoInquiry.Url != webhookUrl)
                     throw new InvalidOperationException("Webhook failed to set. Setted webhook is not equal to asked one.");
 
-            BotInstanceRepo.BotInstanceRecords.Add(botInstance);
+            using (var db = new Db())
+            {
+                var exists = db.BotInstanceRecords.AsNoTracking().Any(x => x.BotUniqueName == botInstance.BotUniqueName);
 
-            ////Id = new Random().Next(1000, 9999)
-            //BotInstanceRepo.BotInstanceRecords.Add(
-            //    result.Username,
-            //    uniqueName,
-            //    User.Identity.GetUserId(),
-            //    token,
-            //    Guid.NewGuid().ToString("N"));
+                if (exists)
+                    TempData["Message"] = $"Bot {botInstance.BotUniqueName} Already exists.";
+                else
+                {
+                    db.BotInstanceRecords.Add(botInstance);
+                    db.SaveChanges();
 
-            TempData["Message"] = $"Bot @{result.Username} added successfully.";
+                    TempData["Message"] = $"Bot @{result.Username} added successfully.";
+                }
+
+                //BotInstanceRepo.BotInstanceRecords.Add(botInstance);
+            }
 
             return RedirectToAction("Index", new { uniquename = uniqueName });
         }
