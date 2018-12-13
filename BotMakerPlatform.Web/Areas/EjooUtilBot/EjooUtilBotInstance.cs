@@ -2,9 +2,7 @@
 using System.IO;
 using System.Linq;
 using BotMakerPlatform.Web.Areas.EjooUtilBot.Repo;
-using BotMakerPlatform.Web.Areas.SupportBot.Manager;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
-using BotMakerPlatform.Web.Repo;
 using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
@@ -130,5 +128,6 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
 
             tempStream.Close();
         }
+
     }
 }
