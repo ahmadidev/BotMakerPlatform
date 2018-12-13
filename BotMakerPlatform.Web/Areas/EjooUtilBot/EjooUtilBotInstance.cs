@@ -53,10 +53,11 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                     HandleTextMessage(update, subscriber);
                     break;
                 case MessageType.Photo:
+                    //var result = TelegramClient.SendTextMessageAsync(subscriber.ChatId, $"Image Recieved : {update.Message.MessageId}").Result;
                     AddImage(update, subscriber);
                     break;
                 default:
-                    TelegramClient.SendTextMessageAsync(subscriber.ChatId, $"لطفا نرین.");
+                    TelegramClient.SendTextMessageAsync(subscriber.ChatId, $"Message Type = {update.Message.Type.ToString()}");
                     break;
             }
         }
@@ -76,7 +77,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
 
         private void AddImage(Update update, Subscriber subscriber)
         {
-            ImagesQueueRepo.Add(subscriber, update.Message.Photo[update.Message.Photo.Length - 1]);
+            ImagesQueueRepo.Add(subscriber, update.Message.Photo[update.Message.Photo.Length - 1], update.Message.MessageId);
         }
 
         private void Flush(Update update, Subscriber subscriber)

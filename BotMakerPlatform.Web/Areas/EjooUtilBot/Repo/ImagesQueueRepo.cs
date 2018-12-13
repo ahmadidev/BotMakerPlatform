@@ -21,19 +21,20 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot.Repo
             return Images.Where(x => x.BotInstanceId == BotInstanceId);
         }
 
-        public void Add(Subscriber subscriber, PhotoSize photoSize)
+        public void Add(Subscriber subscriber, PhotoSize photoSize, int messageId)
         {
             Images.Add(new PhotoRecord
             {
                 BotInstanceId = BotInstanceId,
                 PhotoSize = photoSize,
+                MessageId =  messageId,
                 ChatId = subscriber.ChatId,
             });
         }
 
         public IEnumerable<PhotoRecord> GetCurrentSessionImages(Subscriber subscriber)
         {
-            return GetAll().Where(x => x.ChatId == subscriber.ChatId);
+            return GetAll().Where(x => x.ChatId == subscriber.ChatId).OrderBy(x => x.MessageId);
         }
 
         public void ClearCurrentSessionImages(Subscriber subscriber)

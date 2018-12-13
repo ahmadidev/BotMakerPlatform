@@ -8,6 +8,8 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot.Record
 
         public PhotoSize PhotoSize { get; set; }
 
+        public int MessageId { get; set; }
+
         public long ChatId { get; set; }
     }
 }
