@@ -186,10 +186,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Data\BotMakerPlatform.mdf" />
-    <Content Include="App_Data\BotMakerPlatform_log.ldf">
-      <DependentUpon>BotMakerPlatform.mdf</DependentUpon>
-    </Content>
     <Content Include="Areas\EjooUtilBot\Views\web.config" />
     <Content Include="Content\bootstrap-grid.css" />
     <Content Include="Content\bootstrap-grid.min.css" />

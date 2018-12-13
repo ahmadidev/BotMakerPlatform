@@ -5,6 +5,7 @@ using Autofac;
 using Autofac.Core;
 using Autofac.Core.Lifetime;
 using Autofac.Integration.Mvc;
+using BotMakerPlatform.Web.Repo;
 using Hangfire;
 using Telegram.Bot;
 
@@ -63,6 +64,12 @@ namespace BotMakerPlatform.Web
                 .WithParameter(new ResolvedParameter(
                     (info, context) => info.Name == "botInstanceId",
                     (info, context) => HttpContext.Current.Request.GetOwinContext().Get<int>("BotInstanceId")))
+                .InstancePerRequest()
+                .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
+
+            builder
+                .RegisterType<Db>()
+                .AsSelf()
                 .InstancePerRequest()
                 .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
 

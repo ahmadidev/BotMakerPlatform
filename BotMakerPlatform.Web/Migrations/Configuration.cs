@@ -1,15 +1,13 @@
 namespace BotMakerPlatform.Web.Migrations
 {
-    using System;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
-    using System.Linq;
 
     internal sealed class Configuration : DbMigrationsConfiguration<BotMakerPlatform.Web.Repo.Db>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = true;
+            AutomaticMigrationDataLossAllowed = true;
         }
 
         protected override void Seed(BotMakerPlatform.Web.Repo.Db context)

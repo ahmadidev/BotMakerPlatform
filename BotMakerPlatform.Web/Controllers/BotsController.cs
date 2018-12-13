@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
 using System.Linq;
-using System.Web.Hosting;
 using System.Web.Mvc;
 using Autofac;
 using Autofac.Core.Lifetime;
@@ -14,14 +13,20 @@ namespace BotMakerPlatform.Web.Controllers
 {
     public class BotsController : Controller
     {
+        private Db Db { get; }
+
+        public BotsController(Db db)
+        {
+            Db = db;
+        }
+
         [HttpGet]
         public ActionResult Index(string uniqueName)
         {
             var bot = BotDefinitionRepo.BotDefinitions.Single(x => x.UniqueName == uniqueName);
             //var botInstance = BotInstanceRepo.BotInstanceRecords.FirstOrDefault(x => x.BotUniqueName == uniqueName && x.UserId == User.Identity.GetUserId());
-            BotInstanceRecord botInstance;
-            using (var db = new Db())
-                botInstance = db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == uniqueName);
+            var userId = User.Identity.GetUserId();
+            var botInstance = Db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == uniqueName && x.UserId == userId);
 
             ViewBag.HasIt = botInstance != null;
             ViewBag.BotInstance = botInstance;
@@ -39,13 +44,14 @@ namespace BotMakerPlatform.Web.Controllers
                 telegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", token));
 
             var result = telegramClient.GetMeAsync().Result;
+            var userId = User.Identity.GetUserId();
 
             var botInstance = new BotInstanceRecord
             {
                 Id = new Random().Next(1000, 9999),
                 BotUsername = result.Username,
                 BotUniqueName = uniqueName,
-                UserId = User.Identity.GetUserId(),
+                UserId = userId,
                 Token = token,
                 WebhookSecret = Guid.NewGuid().ToString("N")
             };
@@ -60,22 +66,17 @@ namespace BotMakerPlatform.Web.Controllers
                 if (botInfoInquiry.Url != webhookUrl)
                     throw new InvalidOperationException("Webhook failed to set. Setted webhook is not equal to asked one.");
 
-            using (var db = new Db())
-            {
-                var exists = db.BotInstanceRecords.AsNoTracking().Any(x => x.BotUniqueName == botInstance.BotUniqueName);
+            var existingBotInstanceRecord = Db.BotInstanceRecords.SingleOrDefault(x => x.BotUniqueName == botInstance.BotUniqueName && x.UserId == userId);
 
-                if (exists)
-                    TempData["Message"] = $"Bot {botInstance.BotUniqueName} Already exists.";
-                else
-                {
-                    db.BotInstanceRecords.Add(botInstance);
-                    db.SaveChanges();
+            if (existingBotInstanceRecord != null)
+                Db.BotInstanceRecords.Remove(existingBotInstanceRecord);
 
-                    TempData["Message"] = $"Bot @{result.Username} added successfully.";
-                }
+            Db.BotInstanceRecords.Add(botInstance);
+            Db.SaveChanges();
 
-                //BotInstanceRepo.BotInstanceRecords.Add(botInstance);
-            }
+            TempData["Message"] = $"Bot @{result.Username} added successfully.";
+
+            //BotInstanceRepo.BotInstanceRecords.Add(botInstance);
 
             return RedirectToAction("Index", new { uniquename = uniqueName });
         }

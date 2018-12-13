@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 
 namespace BotMakerPlatform.Web.Repo
 {
@@ -6,9 +7,16 @@ namespace BotMakerPlatform.Web.Repo
     {
         public Db() : base("DefaultConnectionString")
         {
-
+            Database.SetInitializer(new MigrateDatabaseToLatestVersion<Db, Migrations.Configuration>(useSuppliedContext: true));
         }
 
         public IDbSet<BotInstanceRecord> BotInstanceRecords { get; set; }
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<BotInstanceRecord>().Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+        }
     }
 }
