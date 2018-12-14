@@ -22,7 +22,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         public const string FlushCommand = "/flush";
 
         public static IReplyMarkup StartReplyMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { StartCommand });
-        public static IReplyMarkup NotConnected => new ReplyKeyboardMarkup(new KeyboardButton[] { FlushCommand });
+        public static IReplyMarkup FlusMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { FlushCommand });
     }
 
     public class EjooUtilBotInstance : IBotInstance
@@ -54,7 +54,6 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                     HandleTextMessage(update, subscriberRecord);
                     break;
                 case MessageType.Photo:
-                    //var result = TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"Image Recieved : {update.Message.MessageId}").Result;
                     AddImage(update, subscriberRecord);
                     break;
                 default:
@@ -68,7 +67,8 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
             switch (update.Message.Text)
             {
                 case Keyboards.StartCommand:
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "1.Send Images\n2.Use /flush to get you nice pdf :)");
+                    const string defaultWelcomeMessage = "1.Send Images\n2.Use /flush to get you nice pdf :)";
+                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, defaultWelcomeMessage, replyMarkup: Keyboards.FlusMarkup);
                     break;
                 case Keyboards.FlushCommand:
                     Flush(update, subscriberRecord);

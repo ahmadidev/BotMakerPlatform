@@ -260,7 +260,9 @@
     <Compile Include="Areas\EjooUtilBot\EjooUtilBotDefinition.cs" />
     <Compile Include="Areas\EjooUtilBot\EjooUtilBotInstance.cs" />
     <Compile Include="Areas\EjooUtilBot\Models\HomeViewModel.cs" />
+    <Compile Include="Areas\EjooUtilBot\Record\ImageCountRecord.cs" />
     <Compile Include="Areas\EjooUtilBot\Record\PhotoRecord.cs" />
+    <Compile Include="Areas\EjooUtilBot\Repo\ImageCountRepo.cs" />
     <Compile Include="Areas\EjooUtilBot\Repo\ImagesQueueRepo.cs" />
     <Compile Include="Areas\StoreBot\Controllers\HomeController.cs" />
     <Compile Include="Areas\StoreBot\Controllers\StoreAdminRepo.cs" />
