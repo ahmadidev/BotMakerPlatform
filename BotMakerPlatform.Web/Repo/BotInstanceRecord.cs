@@ -1,4 +1,6 @@
-﻿namespace BotMakerPlatform.Web.Repo
+﻿using System.Collections.Generic;
+
+namespace BotMakerPlatform.Web.Repo
 {
     public class BotInstanceRecord
     {
@@ -13,5 +15,7 @@
         public string Token { get; set; }
 
         public string WebhookSecret { get; set; }
+
+        public virtual ICollection<SubscriberRecord> SubscriberRecords { get; set; }
     }
 }

@@ -16,7 +16,7 @@ namespace BotMakerPlatform.Web.Repo
 
         public IEnumerable<SubscriberRecord> GetAll()
         {
-            return Db.Subscribers.Where(x => x.BotInstanceId == BotInstanceId);
+            return Db.Subscribers.Where(x => x.BotInstanceRecordId == BotInstanceId);
         }
 
         public SubscriberRecord GetByChatId(long chatId)
@@ -29,7 +29,7 @@ namespace BotMakerPlatform.Web.Repo
             Db.Subscribers.Add(new SubscriberRecord
             {
                 ChatId = chatId,
-                BotInstanceId = BotInstanceId,
+                BotInstanceRecordId = BotInstanceId,
                 Username = username,
                 FirstName = firstName,
                 LastName = lastName

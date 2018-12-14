@@ -7,7 +7,8 @@
         /// </summary>
         public long ChatId { get; set; }
 
-        public int BotInstanceId { get; set; }
+        public int BotInstanceRecordId { get; set; }
+        public virtual BotInstanceRecord BotInstanceRecord { get; set; }
 
         public string Username { get; set; }
 
