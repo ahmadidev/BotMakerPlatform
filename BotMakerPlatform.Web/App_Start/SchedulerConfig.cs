@@ -22,25 +22,25 @@ namespace BotMakerPlatform.Web
 
     public class HandleExpiredConnectionsJob
     {
-        private BotInstanceRepo BotInstanceRepo { get; }
+        //private BotInstanceRepo BotInstanceRepo { get; }
 
-        public HandleExpiredConnectionsJob(BotInstanceRepo botInstanceRepo)
-        {
-            BotInstanceRepo = botInstanceRepo;
-        }
+        //public HandleExpiredConnectionsJob(BotInstanceRepo botInstanceRepo)
+        //{
+        //    BotInstanceRepo = botInstanceRepo;
+        //}
 
-        public void Execute()
-        {
-            foreach (var botInstanceRecord in BotInstanceRepo.BotInstanceRecords)
-            {
-                var connections = new ConnectionRepo(botInstanceRecord.Id).GetAll();
-                var expireMinutes = new SettingRepo(botInstanceRecord.Id).GetExpireMinutes();
-                var expiredConnections = connections.Where(x => x.CreatedAt.AddMinutes(expireMinutes) > DateTime.UtcNow);
+        //public void Execute()
+        //{
+        //    foreach (var botInstanceRecord in BotInstanceRepo.BotInstanceRecords)
+        //    {
+        //        var connections = new ConnectionRepo(botInstanceRecord.Id).GetAll();
+        //        var expireMinutes = new SettingRepo(botInstanceRecord.Id).GetExpireMinutes();
+        //        var expiredConnections = connections.Where(x => x.CreatedAt.AddMinutes(expireMinutes) > DateTime.UtcNow);
 
-                //new WaitingManager().CustomerDisconnected();
+        //        //new WaitingManager().CustomerDisconnected();
 
-                //TODO: How to resolve dependencies?
-            }
-        }
+        //        //TODO: How to resolve dependencies?
+        //    }
+        //}
     }
 }

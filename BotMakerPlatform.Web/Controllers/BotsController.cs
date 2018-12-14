@@ -24,7 +24,6 @@ namespace BotMakerPlatform.Web.Controllers
         public ActionResult Index(string uniqueName)
         {
             var bot = BotDefinitionRepo.BotDefinitions.Single(x => x.UniqueName == uniqueName);
-            //var botInstance = BotInstanceRepo.BotInstanceRecords.FirstOrDefault(x => x.BotUniqueName == uniqueName && x.UserId == User.Identity.GetUserId());
             var userId = User.Identity.GetUserId();
             var botInstance = Db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == uniqueName && x.UserId == userId);
 
@@ -76,8 +75,6 @@ namespace BotMakerPlatform.Web.Controllers
             Db.SaveChanges();
 
             TempData["Message"] = $"Bot @{result.Username} added successfully.";
-
-            //BotInstanceRepo.BotInstanceRecords.Add(botInstance);
 
             return RedirectToAction("Index", new { uniquename = uniqueName });
         }
