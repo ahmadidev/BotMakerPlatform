@@ -5,35 +5,36 @@ namespace BotMakerPlatform.Web.Repo
 {
     public class SubscriberRepo
     {
-        private static readonly List<Subscriber> Subscribers = new List<Subscriber>();
-
         private int BotInstanceId { get; }
+        private Db Db { get; }
 
-        public SubscriberRepo(int botInstanceId)
+        public SubscriberRepo(int botInstanceId, Db db)
         {
             BotInstanceId = botInstanceId;
+            Db = db;
         }
 
-        public IEnumerable<Subscriber> GetAll()
+        public IEnumerable<SubscriberRecord> GetAll()
         {
-            return Subscribers.Where(x => x.BotInstanceId == BotInstanceId);
+            return Db.Subscribers.Where(x => x.BotInstanceId == BotInstanceId);
         }
 
-        public Subscriber GetByChatId(long chatId)
+        public SubscriberRecord GetByChatId(long chatId)
         {
             return GetAll().SingleOrDefault(x => x.ChatId == chatId);
         }
 
         public void Add(long chatId, string username, string firstName, string lastName)
         {
-            Subscribers.Add(new Subscriber
+            Db.Subscribers.Add(new SubscriberRecord
             {
-                BotInstanceId = BotInstanceId,
                 ChatId = chatId,
+                BotInstanceId = BotInstanceId,
                 Username = username,
                 FirstName = firstName,
                 LastName = lastName
             });
+            Db.SaveChanges();
         }
     }
 }

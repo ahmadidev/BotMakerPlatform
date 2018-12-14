@@ -30,7 +30,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             connectionNotifier.NotifyOnCustomerDisconnect(CustomerDisconnected);
         }
 
-        public void AddToQueue(Subscriber customer)
+        public void AddToQueue(SubscriberRecord customer)
         {
             if (ConnectionManager.HasCustomerConnection(customer))
             {
@@ -63,7 +63,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             }
         }
 
-        public void Cancel(Subscriber customer)
+        public void Cancel(SubscriberRecord customer)
         {
             if (!WaitingQueueRepo.HasWaiter(customer))
             {

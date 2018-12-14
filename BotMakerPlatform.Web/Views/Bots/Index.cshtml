@@ -16,24 +16,34 @@
     @if (ViewBag.HasIt)
     {
         <p>
-            <small><a href="@Url.Action("Index", "Home", new { area = Model.UniqueName })">Manage</a> your @@@(((BotInstanceRecord)ViewBag.BotInstance).BotUsername)</small>
-        </p>
+            <small>
+                <a href="@Url.Action("Index", "Home", new {area = Model.UniqueName})">Manage</a> your @@@(((BotInstanceRecord) ViewBag.BotInstance).BotUsername)
+                <i>
+                    @if (ViewBag.SubscribersCount == 0)
+                    {
+                        <text>(Currently has no subscriber)</text>
+                    }
+                    else
+                    {
+                        <text>(@ViewBag.SubscribersCount @(@ViewBag.SubscribersCount == 1 ? "subsciber" : "subscibers"))</text>
+                    }
+                </i>
+        </small>
+
+    </p>
     }
     <span>@Model.Description</span>
 </p>
 
-@if (!ViewBag.HasIt)
-{
-    <fieldset>
-        <legend>Add new bot</legend>
-        @using (Html.BeginForm("AddBotInstance", "Bots", new { uniquename = Model.UniqueName }))
-        {
-            <div class="form-group">
-                <label for="Token">Token</label>
-                <input type="text" class="form-control" id="Token" name="Token" aria-describedby="TokenHelp" placeholder="Enter Token" autofocus>
-                <small id="TokenHelp" class="form-text text-muted">Enter token received from @@botfather.</small>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        }
-    </fieldset>
-}
+<fieldset>
+    <legend>Add new bot</legend>
+    @using (Html.BeginForm("AddBotInstance", "Bots", new { uniquename = Model.UniqueName }))
+    {
+        <div class="form-group">
+            <label for="Token">Token</label>
+            <input type="text" class="form-control" id="Token" name="Token" aria-describedby="TokenHelp" placeholder="Enter Token" autofocus>
+            <small id="TokenHelp" class="form-text text-muted">Enter token received from @@botfather.</small>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    }
+</fieldset>

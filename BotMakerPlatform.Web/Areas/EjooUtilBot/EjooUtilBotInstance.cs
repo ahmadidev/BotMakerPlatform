@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using BotMakerPlatform.Web.Areas.EjooUtilBot.Repo;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
+using BotMakerPlatform.Web.Repo;
 using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
@@ -42,7 +43,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
             TelegramClient = telegramClient;
         }
 
-        public void Update(Update update, Subscriber subscriber)
+        public void Update(Update update, SubscriberRecord subscriberRecord)
         {
             if (update.Type != UpdateType.Message)
                 return;
@@ -50,47 +51,47 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
             switch (update.Message.Type)
             {
                 case MessageType.Text:
-                    HandleTextMessage(update, subscriber);
+                    HandleTextMessage(update, subscriberRecord);
                     break;
                 case MessageType.Photo:
-                    //var result = TelegramClient.SendTextMessageAsync(subscriber.ChatId, $"Image Recieved : {update.Message.MessageId}").Result;
-                    AddImage(update, subscriber);
+                    //var result = TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"Image Recieved : {update.Message.MessageId}").Result;
+                    AddImage(update, subscriberRecord);
                     break;
                 default:
-                    TelegramClient.SendTextMessageAsync(subscriber.ChatId, $"Message Type = {update.Message.Type.ToString()}");
+                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"Message Type = {update.Message.Type.ToString()}");
                     break;
             }
         }
 
-        private void HandleTextMessage(Update update, Subscriber subscriber)
+        private void HandleTextMessage(Update update, SubscriberRecord subscriberRecord)
         {
             switch (update.Message.Text)
             {
                 case Keyboards.StartCommand:
-                    TelegramClient.SendTextMessageAsync(subscriber.ChatId, "1.Send Images\n2.Use /flush to get you nice pdf :)");
+                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "1.Send Images\n2.Use /flush to get you nice pdf :)");
                     break;
                 case Keyboards.FlushCommand:
-                    Flush(update, subscriber);
+                    Flush(update, subscriberRecord);
                     break;
             }
         }
 
-        private void AddImage(Update update, Subscriber subscriber)
+        private void AddImage(Update update, SubscriberRecord subscriberRecord)
         {
-            ImagesQueueRepo.Add(subscriber, update.Message.Photo[update.Message.Photo.Length - 1], update.Message.MessageId);
+            ImagesQueueRepo.Add(subscriberRecord, update.Message.Photo[update.Message.Photo.Length - 1], update.Message.MessageId);
         }
 
-        private void Flush(Update update, Subscriber subscriber)
+        private void Flush(Update update, SubscriberRecord subscriberRecord)
         {
-            var currentSessionImages = ImagesQueueRepo.GetCurrentSessionImages(subscriber).ToArray();
+            var currentSessionImages = ImagesQueueRepo.GetCurrentSessionImages(subscriberRecord).ToArray();
 
             if (!currentSessionImages.Any())
             {
-                TelegramClient.SendTextMessageAsync(subscriber.ChatId, "Please send some images first.");
+                TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "Please send some images first.");
                 return;
             }
 
-            TelegramClient.SendTextMessageAsync(subscriber.ChatId, $"Processing { currentSessionImages.Length } Images...");
+            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"Processing { currentSessionImages.Length } Images...");
 
             var inImageStream = new MemoryStream();
             var file = TelegramClient.GetInfoAndDownloadFileAsync(currentSessionImages[0].PhotoSize.FileId, inImageStream).Result;
@@ -115,20 +116,19 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                 }
             }
 
-            SendPdf(subscriber, memStream);
+            SendPdf(subscriberRecord, memStream);
             memStream.Close();
-            ImagesQueueRepo.ClearCurrentSessionImages(subscriber);
+            ImagesQueueRepo.ClearCurrentSessionImages(subscriberRecord);
         }
 
-        private void SendPdf(Subscriber subscriber, MemoryStream memStream)
+        private void SendPdf(SubscriberRecord subscriberRecord, MemoryStream memStream)
         {
             var bytes = memStream.ToArray();
             var tempStream = new MemoryStream(bytes);
 
-            var message = TelegramClient.SendDocumentAsync(subscriber.ChatId, new InputOnlineFile(tempStream, $"Document {DateTime.UtcNow:yyyy MMMM dd}.pdf")).Result;
+            var message = TelegramClient.SendDocumentAsync(subscriberRecord.ChatId, new InputOnlineFile(tempStream, $"Document {DateTime.Now:yyyy MMMM dd}.pdf")).Result;
 
             tempStream.Close();
         }
-
     }
 }

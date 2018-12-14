@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BotMakerPlatform.Web.Areas.SupportBot.Record;
+using BotMakerPlatform.Web.Repo;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
 {
@@ -25,7 +26,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
             return GetAll().Any();
         }
 
-        public void Enqueue(Subscriber customer)
+        public void Enqueue(SubscriberRecord customer)
         {
             WaiterRecords.Add(new WaiterRecord
             {
@@ -46,17 +47,17 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
             return firstWaiterChatId;
         }
 
-        public int GetPosition(Subscriber customer)
+        public int GetPosition(SubscriberRecord customer)
         {
             return GetAll().ToList().IndexOf(customer.ChatId) + 1;
         }
 
-        public bool HasWaiter(Subscriber customer)
+        public bool HasWaiter(SubscriberRecord customer)
         {
             return GetAll().Any(x => x == customer.ChatId);
         }
 
-        public void Remove(Subscriber customer)
+        public void Remove(SubscriberRecord customer)
         {
             WaiterRecords.RemoveAll(x => x.BotInstanceId == BotInstanceId && x.WaiterChatId == customer.ChatId);
         }

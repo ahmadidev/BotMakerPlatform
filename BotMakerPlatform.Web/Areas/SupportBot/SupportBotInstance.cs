@@ -1,5 +1,6 @@
 ﻿using BotMakerPlatform.Web.Areas.SupportBot.Manager;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
+using BotMakerPlatform.Web.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -33,23 +34,23 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
             TelegramClient = telegramClient;
         }
 
-        public void Update(Update update, Subscriber subscriber)
+        public void Update(Update update, SubscriberRecord subscriberRecord)
         {
             if (update.Type != UpdateType.Message)
                 return;
 
-            if (SupporterRepo.IsSupporter(subscriber))
-                HandleSupporterMessage(update, subscriber);
+            if (SupporterRepo.IsSupporter(subscriberRecord))
+                HandleSupporterMessage(update, subscriberRecord);
             else
-                HandleCustomerMessage(update, subscriber);
+                HandleCustomerMessage(update, subscriberRecord);
         }
 
-        private void HandleSupporterMessage(Update update, Subscriber supporter)
+        private void HandleSupporterMessage(Update update, SubscriberRecord supporter)
         {
             ConnectionManager.Direct(supporter, update);
         }
 
-        private void HandleCustomerMessage(Update update, Subscriber customer)
+        private void HandleCustomerMessage(Update update, SubscriberRecord customer)
         {
             switch (update.Message.Text)
             {

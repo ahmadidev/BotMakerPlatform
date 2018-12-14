@@ -1,4 +1,5 @@
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
+using BotMakerPlatform.Web.Repo;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
@@ -29,7 +30,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             ConnectionRepo = connectionRepo;
         }
 
-        public IReplyMarkup GetCustomerReplyKeyboardMarkup(Subscriber customer)
+        public IReplyMarkup GetCustomerReplyKeyboardMarkup(SubscriberRecord customer)
         {
             if (ConnectionRepo.FindPartyChatId(customer) != default(long))
                 return Keyboards.Connected;
@@ -39,7 +40,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
                 return Keyboards.NotConnected;
         }
 
-        public IReplyMarkup GetSupporterReplyKeyboardMarkup(Subscriber subscriber)
+        public IReplyMarkup GetSupporterReplyKeyboardMarkup(SubscriberRecord subscriberRecord)
         {
             return Keyboards.Empty;
         }

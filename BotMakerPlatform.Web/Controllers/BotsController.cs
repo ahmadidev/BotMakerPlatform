@@ -30,6 +30,7 @@ namespace BotMakerPlatform.Web.Controllers
 
             ViewBag.HasIt = botInstance != null;
             ViewBag.BotInstance = botInstance;
+            ViewBag.SubscribersCount = botInstance != null ? new SubscriberRepo(botInstance.Id, Db).GetAll().Count() : 0;
 
             return View(bot);
         }

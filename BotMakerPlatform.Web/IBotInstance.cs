@@ -1,4 +1,5 @@
-﻿using Telegram.Bot.Types;
+﻿using BotMakerPlatform.Web.Repo;
+using Telegram.Bot.Types;
 
 namespace BotMakerPlatform.Web
 {
@@ -6,6 +7,6 @@ namespace BotMakerPlatform.Web
     {
         int Id { get; set; }
 
-        void Update(Update update, Subscriber subscriber);
+        void Update(Update update, SubscriberRecord subscriberRecord);
     }
 }

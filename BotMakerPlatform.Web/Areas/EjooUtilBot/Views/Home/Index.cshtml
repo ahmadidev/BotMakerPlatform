@@ -1,0 +1,25 @@
+﻿@model BotMakerPlatform.Web.Areas.EjooUtilBot.Models.HomeViewModel
+
+@{
+    ViewBag.Title = "EjooUtilBot - Home";
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Username</th>
+            <th scope="col">Name</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var subscriber in Model.Subscribers)
+        {
+            <tr>
+                <th scope="row">@(Model.Subscribers.IndexOf(subscriber) + 1)</th>
+                <td>@subscriber.Username</td>
+                <td>@subscriber.FirstName @subscriber.LastName</td>
+            </tr>
+        }
+    </tbody>
+</table>

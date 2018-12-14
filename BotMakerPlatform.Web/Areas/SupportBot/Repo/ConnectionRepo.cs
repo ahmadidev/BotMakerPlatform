@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using BotMakerPlatform.Web.Areas.SupportBot.Record;
+using BotMakerPlatform.Web.Repo;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
 {
@@ -21,7 +22,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
             return Connections.Where(x => x.BotInstanceId == BotInstanceId);
         }
 
-        public void Add(Subscriber supporter, Subscriber customer)
+        public void Add(SubscriberRecord supporter, SubscriberRecord customer)
         {
             Connections.Add(new ConnectionRecord
             {
@@ -32,9 +33,9 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
             });
         }
 
-        public long FindPartyChatId(Subscriber subscriber)
+        public long FindPartyChatId(SubscriberRecord subscriberRecord)
         {
-            var chatId = subscriber.ChatId;
+            var chatId = subscriberRecord.ChatId;
 
             var party = Connections.SingleOrDefault(x =>
                 x.BotInstanceId == BotInstanceId &&
@@ -49,7 +50,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
                 : party.SupporterChatId;
         }
 
-        public void RemoveByCustomer(Subscriber customer)
+        public void RemoveByCustomer(SubscriberRecord customer)
         {
             Connections.RemoveAll(x => x.CustomerChatId == customer.ChatId);
         }

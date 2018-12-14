@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
+using BotMakerPlatform.Web.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -29,7 +30,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             ConnectionNotifier = connectionNotifier;
         }
 
-        public bool TryConnect(Subscriber customer)
+        public bool TryConnect(SubscriberRecord customer)
         {
             var supporters = SupporterRepo.GetAll();
             var connections = ConnectionRepo.GetAll();
@@ -51,13 +52,13 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             return false;
         }
 
-        public void Direct(Subscriber subscriber, Update update)
+        public void Direct(SubscriberRecord subscriberRecord, Update update)
         {
-            var partyChatId = ConnectionRepo.FindPartyChatId(subscriber);
+            var partyChatId = ConnectionRepo.FindPartyChatId(subscriberRecord);
 
-            var replyKeyboardMarkup = SupporterRepo.IsSupporter(subscriber) ?
-                StateManager.GetCustomerReplyKeyboardMarkup(subscriber) :
-                StateManager.GetSupporterReplyKeyboardMarkup(subscriber);
+            var replyKeyboardMarkup = SupporterRepo.IsSupporter(subscriberRecord) ?
+                StateManager.GetCustomerReplyKeyboardMarkup(subscriberRecord) :
+                StateManager.GetSupporterReplyKeyboardMarkup(subscriberRecord);
 
             if (partyChatId != default(long))
             {
@@ -116,7 +117,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
                     case MessageType.Invoice:
                     case MessageType.SuccessfulPayment:
                     case MessageType.Unknown:
-                        TelegramClient.SendTextMessageAsync(subscriber.ChatId,
+                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId,
                             $"Message type {message.Type} is not supported.", replyMarkup: replyKeyboardMarkup);
                         break;
                     case MessageType.WebsiteConnected:
@@ -137,11 +138,11 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             }
             else
             {
-                TelegramClient.SendTextMessageAsync(subscriber.ChatId, "You have no current session.", replyMarkup: replyKeyboardMarkup);
+                TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "You have no current session.", replyMarkup: replyKeyboardMarkup);
             }
         }
 
-        public void Disconnect(Subscriber customer)
+        public void Disconnect(SubscriberRecord customer)
         {
             var supporterChatId = ConnectionRepo.FindPartyChatId(customer);
 
@@ -162,7 +163,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             }
         }
 
-        private Subscriber FairSelectSupporter()
+        private SubscriberRecord FairSelectSupporter()
         {
             var supporters = SupporterRepo.GetAll();
             var connections = ConnectionRepo.GetAll();
@@ -171,7 +172,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Manager
             return supporters.FirstOrDefault(x => connections.All(c => c.SupporterChatId != x.ChatId));
         }
 
-        public bool HasCustomerConnection(Subscriber customer)
+        public bool HasCustomerConnection(SubscriberRecord customer)
         {
             return ConnectionRepo.FindPartyChatId(customer) != default(long);
         }

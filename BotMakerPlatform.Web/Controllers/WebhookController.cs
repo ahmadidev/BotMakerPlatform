@@ -61,12 +61,12 @@ namespace BotMakerPlatform.Web.Controllers
             return Content("");
         }
 
-        private Subscriber GetSubscriber(long chatId)
+        private SubscriberRecord GetSubscriber(long chatId)
         {
-            return SubscriberRepo.GetAll().SingleOrDefault(x => x.ChatId == chatId);
+            return SubscriberRepo.GetByChatId(chatId);
         }
 
-        private Subscriber AddSubscriber(Update update)
+        private SubscriberRecord AddSubscriber(Update update)
         {
             var message = update.Message;
 

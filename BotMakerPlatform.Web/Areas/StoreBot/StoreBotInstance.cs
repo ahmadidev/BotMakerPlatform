@@ -1,5 +1,6 @@
 using System.Linq;
 using BotMakerPlatform.Web.Areas.StoreBot.Controllers;
+using BotMakerPlatform.Web.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -16,20 +17,20 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             TelegramClient = telegramClient;
         }
 
-        public void Update(Update update, Subscriber subscriber)
+        public void Update(Update update, SubscriberRecord subscriberRecord)
         {
             if (update.Type != UpdateType.Message)
                 return;
 
-            var isAdmin = StoreAdminRepo.StoreAdmins.Any(x => x.ChatId == subscriber.ChatId);
+            var isAdmin = StoreAdminRepo.StoreAdmins.Any(x => x.ChatId == subscriberRecord.ChatId);
 
             if (isAdmin)
             {
-                TelegramClient.SendTextMessageAsync(subscriber.ChatId, "Welcome admin!");
+                TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "Welcome admin!");
             }
             else
             {
-                TelegramClient.SendTextMessageAsync(subscriber.ChatId, "Select your category (masalan)...");
+                TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "Select your category (masalan)...");
             }
         }
     }

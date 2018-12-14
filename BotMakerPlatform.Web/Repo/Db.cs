@@ -11,12 +11,21 @@ namespace BotMakerPlatform.Web.Repo
         }
 
         public IDbSet<BotInstanceRecord> BotInstanceRecords { get; set; }
+        public IDbSet<SubscriberRecord> Subscribers { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<BotInstanceRecord>().Property(x => x.Id).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+            modelBuilder
+                .Entity<BotInstanceRecord>()
+                .Property(x => x.Id)
+                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+
+            modelBuilder
+                .Entity<SubscriberRecord>()
+                .HasKey(x => x.ChatId)
+                .Property(x => x.ChatId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
         }
     }
 }

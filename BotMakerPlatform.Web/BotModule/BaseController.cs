@@ -6,6 +6,7 @@ using Autofac;
 using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNet.Identity;
+using Newtonsoft.Json;
 using Telegram.Bot;
 
 namespace BotMakerPlatform.Web.BotModule
@@ -13,7 +14,7 @@ namespace BotMakerPlatform.Web.BotModule
     public class BaseController : Controller
     {
         protected string UserId { get; private set; }
-        protected IEnumerable<Subscriber> Subscribers { get; private set; }
+        protected IEnumerable<SubscriberRecord> Subscribers { get; private set; }
         protected ITelegramBotClient TelegramClient { get; private set; }
         protected int BotInstanceId { get; private set; }
 
@@ -30,16 +31,16 @@ namespace BotMakerPlatform.Web.BotModule
             UserId = User.Identity.GetUserId();
             //var botInstance = BotInstanceRepo.BotInstanceRecords.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
 
-            BotInstanceRecord botInstance;
-            using (var db = new Db())
-                botInstance = db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == botUniqueName);
-
             //TODO: Make sure don't leak
-            using (var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag))
-                TelegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstance.Token));
+            var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
+            var db = scope.Resolve<Db>();
+            var botInstance = db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == botUniqueName);
+            var subscriberRepo = scope.Resolve<SubscriberRepo>();
+            TelegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstance.Token));
 
             BotInstanceId = botInstance.Id;
-            Subscribers = new SubscriberRepo(BotInstanceId).GetAll();
+            Subscribers = subscriberRepo.GetAll();
+            TempData["Message"] = JsonConvert.SerializeObject(Subscribers.Count());
 
             ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { BotId = botInstance.Id });
         }

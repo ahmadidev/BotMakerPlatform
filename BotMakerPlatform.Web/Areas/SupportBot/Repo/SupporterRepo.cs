@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using BotMakerPlatform.Web.Repo;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
 {
     public class SupporterRepo
     {
-        private static readonly List<Subscriber> Supporters = new List<Subscriber>();
+        private static readonly List<SubscriberRecord> Supporters = new List<SubscriberRecord>();
 
         private int BotInstanceId { get; }
 
@@ -14,7 +15,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
             BotInstanceId = botInstanceId;
         }
 
-        public IEnumerable<Subscriber> GetAll()
+        public IEnumerable<SubscriberRecord> GetAll()
         {
             return Supporters.Where(x => x.BotInstanceId == BotInstanceId);
         }
@@ -22,7 +23,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
         public void Add(long chatId)
         {
             Remove(chatId);
-            Supporters.Add(new Subscriber { BotInstanceId = BotInstanceId, ChatId = chatId });
+            Supporters.Add(new SubscriberRecord { BotInstanceId = BotInstanceId, ChatId = chatId });
         }
 
         public void Remove(long chatId)
@@ -30,9 +31,9 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
             Supporters.RemoveAll(x => x.BotInstanceId == BotInstanceId && x.ChatId == chatId);
         }
 
-        public bool IsSupporter(Subscriber subscriber)
+        public bool IsSupporter(SubscriberRecord subscriberRecord)
         {
-            return GetAll().Any(x => x.ChatId == subscriber.ChatId);
+            return GetAll().Any(x => x.ChatId == subscriberRecord.ChatId);
         }
     }
 }
