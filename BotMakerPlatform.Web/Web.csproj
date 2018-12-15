@@ -300,7 +300,6 @@
     <Compile Include="Repo\Db.cs" />
     <Compile Include="SimulatorBotClient.cs" />
     <Compile Include="Repo\SubscriberRepo.cs" />
-    <Compile Include="Repo\BotInstanceRepo.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\BotsController.cs" />
     <Compile Include="Controllers\HomeController.cs" />

@@ -6,7 +6,6 @@ using Autofac;
 using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNet.Identity;
-using Newtonsoft.Json;
 using Telegram.Bot;
 
 namespace BotMakerPlatform.Web.BotModule
@@ -29,18 +28,16 @@ namespace BotMakerPlatform.Web.BotModule
         {
             var botUniqueName = filterContext.RouteData.DataTokens["area"].ToString();
             UserId = User.Identity.GetUserId();
-            //var botInstance = BotInstanceRepo.BotInstanceRecords.Single(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
 
             //TODO: Make sure don't leak
             var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
             var db = scope.Resolve<Db>();
-            var botInstance = db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == botUniqueName);
-            var subscriberRepo = scope.Resolve<SubscriberRepo>();
+            var botInstance = db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
+
             TelegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstance.Token));
 
             BotInstanceId = botInstance.Id;
-            Subscribers = subscriberRepo.GetAll();
-            TempData["Message"] = JsonConvert.SerializeObject(Subscribers.Count());
+            Subscribers = botInstance.SubscriberRecords;
 
             ViewBag.WebhookUrl = Url.Action("WebhookInfo", new { BotId = botInstance.Id });
         }

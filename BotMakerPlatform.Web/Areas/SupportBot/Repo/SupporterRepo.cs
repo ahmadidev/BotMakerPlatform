@@ -17,18 +17,18 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
 
         public IEnumerable<SubscriberRecord> GetAll()
         {
-            return Supporters.Where(x => x.BotInstanceId == BotInstanceId);
+            return Supporters.Where(x => x.BotInstanceRecordId == BotInstanceId);
         }
 
         public void Add(long chatId)
         {
             Remove(chatId);
-            Supporters.Add(new SubscriberRecord { BotInstanceId = BotInstanceId, ChatId = chatId });
+            Supporters.Add(new SubscriberRecord { BotInstanceRecordId = BotInstanceId, ChatId = chatId });
         }
 
         public void Remove(long chatId)
         {
-            Supporters.RemoveAll(x => x.BotInstanceId == BotInstanceId && x.ChatId == chatId);
+            Supporters.RemoveAll(x => x.BotInstanceRecordId == BotInstanceId && x.ChatId == chatId);
         }
 
         public bool IsSupporter(SubscriberRecord subscriberRecord)
