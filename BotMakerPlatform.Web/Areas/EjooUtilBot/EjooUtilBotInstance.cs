@@ -135,7 +135,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
             var spaces = new String(' ', inTen);
             var hashtags = new String('#', 10 - inTen);
 
-            return $"[{spaces}{hashtags}]  {percentage}%";
+            return $"[{spaces}{hashtags}]  {percentage * 100}%";
         }
 
         private void SendPdf(SubscriberRecord subscriberRecord, MemoryStream memStream)
@@ -148,8 +148,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
             // Do not wait and close stream -> Do Continue With Close Stream
             var message = TelegramClient.SendDocumentAsync(
                 subscriberRecord.ChatId,
-                new InputOnlineFile(tempStream, $"Document {DateTime.Now:yyyy MMMM dd}.pdf"),
-                cl
+                new InputOnlineFile(tempStream, $"Document {DateTime.Now:yyyy MMMM dd}.pdf")
                 ).Result;
 
             tempStream.Close();
