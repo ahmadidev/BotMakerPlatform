@@ -130,12 +130,12 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         private static string GetProgressString(int i, int n)
         {
             var percentage = (float)(i) / n;
-            var inTen = (int)percentage * 10;
+            var inTen = (int)(percentage * 10);
 
             var spaces = new String(' ', inTen);
             var hashtags = new String('#', 10 - inTen);
 
-            return $"[{spaces}{hashtags}]  {percentage * 100}%";
+            return $"[{spaces}{hashtags}]  {(percentage * 100):0.00}%";
         }
 
         private void SendPdf(SubscriberRecord subscriberRecord, MemoryStream memStream)
