@@ -11,6 +11,7 @@ using BotMakerPlatform.Web.CriticalDtos;
 using BotMakerPlatform.Web.Repo;
 using Newtonsoft.Json;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 
 namespace BotMakerPlatform.Web.Controllers
 {
@@ -49,6 +50,9 @@ namespace BotMakerPlatform.Web.Controllers
 
                 var botInstance = (IBotInstance)scope.Resolve(Type.GetType(typeName));
                 botInstance.Id = botInstanceRecord.Id;
+                botInstance.Username = botInstanceRecord.BotUsername;
+
+                Dump(botInstance, update);
 
                 SubscriberRepo = scope.Resolve<SubscriberRepo>();
 
@@ -58,6 +62,28 @@ namespace BotMakerPlatform.Web.Controllers
             }
 
             return Content("");
+        }
+
+        private static void Dump(IBotInstance botInstance, Update update)
+        {
+            var messageHeader = $"@{botInstance.Username}";
+
+            if (update.Type == UpdateType.Message)
+            {
+                messageHeader += $" - {update.Message.From.FirstName}";
+
+                if (update.Message.From.LastName.HasText())
+                    messageHeader += update.Message.From.LastName;
+
+                if (update.Message.From.Username.HasText())
+                    messageHeader += $"(@{update.Message.From.Username})";
+
+                Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, $"{messageHeader}\n{update.Message.Type}");
+            }
+            else
+            {
+                Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, $"{messageHeader}\nUpdate received ({update.Type}): {JsonConvert.SerializeObject(update)}");
+            }
         }
 
         private SubscriberRecord GetSubscriber(long chatId)

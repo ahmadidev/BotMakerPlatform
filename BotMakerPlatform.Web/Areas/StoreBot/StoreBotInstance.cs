@@ -10,6 +10,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
     public class StoreBotInstance : IBotInstance
     {
         public int Id { get; set; }
+        public string Username { get; set; }
         private ITelegramBotClient TelegramClient { get; }
 
         public StoreBotInstance(ITelegramBotClient telegramClient)

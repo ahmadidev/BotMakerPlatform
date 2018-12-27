@@ -29,6 +29,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
     public class EjooUtilBotInstance : IBotInstance
     {
         public int Id { get; set; }
+        public string Username { get; set; }
 
         private ImagesQueueRepo ImagesQueueRepo { get; }
         private SettingRepo SettingRepo { get; }
@@ -91,7 +92,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                 TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "Please send some images first.");
                 return;
             }
-            
+
             TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"Processing { currentSessionImages.Length } Images...");
             var progreessMsgId = TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, GetProgressString(0, 10)).Result.MessageId;
 
@@ -132,10 +133,10 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
             var percentage = (float)(i) / n;
             var inTen = (int)(percentage * 10);
 
-            var spaces = new String(' ', inTen);
-            var hashtags = new String('#', 10 - inTen);
+            var spaces = new String(' ', 10 - inTen);
+            var hashtags = new String('#', inTen);
 
-            return $"[{spaces}{hashtags}]  {(percentage * 100):0.00}%";
+            return $"[{hashtags}{spaces}]  {(percentage * 100):0.00}%";
         }
 
         private void SendPdf(SubscriberRecord subscriberRecord, MemoryStream memStream)

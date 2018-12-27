@@ -289,6 +289,8 @@
     <Compile Include="Areas\SupportBot\Manager\WaitingManager.cs" />
     <Compile Include="Areas\SupportBot\Repo\WaitingQueueRepo.cs" />
     <Compile Include="BotModule\BaseController.cs" />
+    <Compile Include="Dumper.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Repo\BotDefinitionRepo.cs" />
     <Compile Include="Configuration.cs" />

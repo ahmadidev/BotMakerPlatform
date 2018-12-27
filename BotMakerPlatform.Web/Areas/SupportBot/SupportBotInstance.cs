@@ -10,6 +10,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot
     public class SupportBotInstance : IBotInstance
     {
         public int Id { get; set; }
+        public string Username { get; set; }
 
         private WaitingManager WaitingManager { get; }
         private SupporterRepo SupporterRepo { get; }
