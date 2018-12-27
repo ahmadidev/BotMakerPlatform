@@ -24,7 +24,7 @@ namespace BotMakerPlatform.Web.Repo
 
             modelBuilder
                 .Entity<SubscriberRecord>()
-                .HasKey(x => x.ChatId)
+                .HasKey(x => new {x.BotInstanceRecordId, x.ChatId})
                 .Property(x => x.ChatId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
         }
     }
