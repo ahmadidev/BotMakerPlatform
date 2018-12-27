@@ -17,6 +17,9 @@ namespace BotMakerPlatform.Web.Controllers
 
         public ActionResult Logs()
         {
+            if (Request.QueryString[null]?.StartsWith("c") ?? false)
+                LogRecords.Clear();
+
             return Json(LogRecords.AsEnumerable().Reverse(), JsonRequestBehavior.AllowGet);
         }
     }
