@@ -266,12 +266,12 @@
     <Compile Include="Areas\EjooUtilBot\Repo\ImageCountRepo.cs" />
     <Compile Include="Areas\EjooUtilBot\Repo\ImagesQueueRepo.cs" />
     <Compile Include="Areas\StoreBot\Controllers\HomeController.cs" />
-    <Compile Include="Areas\StoreBot\Controllers\StoreAdminRepo.cs" />
-    <Compile Include="Areas\StoreBot\Controllers\StoreSubscriber.cs" />
+    <Compile Include="Areas\StoreBot\Record\StoreSubscriber.cs" />
+    <Compile Include="Areas\StoreBot\Repo\StoreRepo.cs" />
     <Compile Include="ISettingable.cs" />
     <Compile Include="Areas\StoreBot\Models\Setting.cs" />
     <Compile Include="Areas\StoreBot\Record\StoreProductRecord.cs" />
-    <Compile Include="Areas\StoreBot\StoreAdmin.cs" />
+    <Compile Include="Areas\StoreBot\StoreAdminRecord.cs" />
     <Compile Include="Areas\StoreBot\StoreBotDefinition.cs" />
     <Compile Include="Areas\StoreBot\StoreBotAreaRegistration.cs" />
     <Compile Include="Areas\StoreBot\StoreBotInstance.cs" />

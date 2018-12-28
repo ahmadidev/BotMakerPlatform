@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using BotMakerPlatform.Web.Areas.StoreBot.Controllers;
 using BotMakerPlatform.Web.Areas.StoreBot.Models;
 using BotMakerPlatform.Web.Areas.StoreBot.Record;
+using BotMakerPlatform.Web.Areas.StoreBot.Repo;
 using BotMakerPlatform.Web.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -37,6 +37,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
         private ITelegramBotClient TelegramClient { get; }
         private SettingRepo SettingRepo { get; }
+        private StoreAdminRepo StoreAdminRepo { get; }
 
         public enum NewProductSteps
         {
@@ -62,10 +63,11 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
         private static readonly Dictionary<long, NewProductInState> NewProductStates = new Dictionary<long, NewProductInState>();
 
-        public StoreBotInstance(ITelegramBotClient telegramClient, SettingRepo settingRepo)
+        public StoreBotInstance(ITelegramBotClient telegramClient, SettingRepo settingRepo, StoreAdminRepo storeAdminRepo)
         {
             TelegramClient = telegramClient;
             SettingRepo = settingRepo;
+            StoreAdminRepo = storeAdminRepo;
         }
 
         public void Update(Update update, SubscriberRecord subscriberRecord)
@@ -83,7 +85,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                 return;
             }
 
-            var isAdmin = StoreAdminRepo.StoreAdmins.Any(x => x.ChatId == subscriberRecord.ChatId);
+            var isAdmin = StoreAdminRepo.GetAdmin(subscriberRecord.ChatId) != null;
 
             switch (update.Message.Text)
             {
@@ -167,7 +169,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             var parts = update.CallbackQuery.Data.Split(':');
             if (parts.Length == 2 && parts[0] == "delete" && int.TryParse(parts[1], out var productId))
             {
-                var isAdmin = StoreAdminRepo.StoreAdmins.Any(x => x.ChatId == update.CallbackQuery.Message.Chat.Id);
+                var isAdmin = StoreAdminRepo.GetAdmin(update.CallbackQuery.Message.Chat.Id) != null;
 
                 if (!isAdmin)
                 {

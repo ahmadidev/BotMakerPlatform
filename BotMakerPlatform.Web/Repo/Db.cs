@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using BotMakerPlatform.Web.Areas.StoreBot;
 using BotMakerPlatform.Web.Areas.StoreBot.Record;
 
 namespace BotMakerPlatform.Web.Repo
@@ -17,6 +18,7 @@ namespace BotMakerPlatform.Web.Repo
 
         //Bot Modules
         public IDbSet<StoreProductRecord> StoreProductRecords { get; set; }
+        public IDbSet<StoreAdminRecord> StoreAdminRecords { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -29,7 +31,7 @@ namespace BotMakerPlatform.Web.Repo
 
             modelBuilder
                 .Entity<SubscriberRecord>()
-                .HasKey(x => new {x.BotInstanceRecordId, x.ChatId})
+                .HasKey(x => new { x.BotInstanceRecordId, x.ChatId })
                 .Property(x => x.ChatId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
 
             modelBuilder
@@ -38,7 +40,10 @@ namespace BotMakerPlatform.Web.Repo
                 .Property(x => x.BotInstanceRecordId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
 
             //Bots Data
-            //modelBuilder.Entity<StoreProductRecord>()
+            modelBuilder
+                .Entity<StoreAdminRecord>()
+                .HasKey(x => new { x.BotInstanceRecordId, x.ChatId })
+                .Property(x => x.ChatId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
         }
     }
 }

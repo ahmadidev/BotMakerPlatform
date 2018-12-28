@@ -1,6 +1,8 @@
 ﻿using System.Linq;
 using System.Web.Mvc;
 using BotMakerPlatform.Web.Areas.StoreBot.Models;
+using BotMakerPlatform.Web.Areas.StoreBot.Record;
+using BotMakerPlatform.Web.Areas.StoreBot.Repo;
 using BotMakerPlatform.Web.BotModule;
 using BotMakerPlatform.Web.Repo;
 
@@ -10,9 +12,11 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
     {
         public ActionResult Index()
         {
+            var storeAdminRepo = new StoreAdminRepo(BotInstanceId, new Db());
+
             //What an acidi method...
             var storeSubscribers = Subscribers
-                .GroupJoin(StoreAdminRepo.StoreAdmins,
+                .GroupJoin(storeAdminRepo.GetAllAdmins(),
                     subscriber => subscriber.ChatId,
                     admin => admin.ChatId,
                     (subscriber, admins) => new StoreSubscriber
@@ -50,8 +54,9 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
         [HttpPost]
         public ActionResult MakeAdmin(long chatId)
         {
-            StoreAdminRepo.StoreAdmins.RemoveAll(x => x.BotId == BotInstanceId && x.ChatId == chatId);
-            StoreAdminRepo.StoreAdmins.Add(new StoreAdmin { BotId = BotInstanceId, ChatId = chatId });
+            var storeAdminRepo = new StoreAdminRepo(BotInstanceId, new Db());
+
+            storeAdminRepo.AddAdmin(chatId);
 
             return Redirect(Request.UrlReferrer?.ToString());
         }
@@ -59,7 +64,9 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
         [HttpPost]
         public ActionResult RemoveAdmin(long chatId)
         {
-            StoreAdminRepo.StoreAdmins.RemoveAll(x => x.BotId == BotInstanceId && x.ChatId == chatId);
+            var storeAdminRepo = new StoreAdminRepo(BotInstanceId, new Db());
+
+            storeAdminRepo.RemoveAdmin(chatId);
 
             return Redirect(Request.UrlReferrer?.ToString());
         }

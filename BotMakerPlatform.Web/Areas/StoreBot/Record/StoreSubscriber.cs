@@ -1,4 +1,4 @@
-﻿namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
+﻿namespace BotMakerPlatform.Web.Areas.StoreBot.Record
 {
     public class StoreSubscriber
     {
