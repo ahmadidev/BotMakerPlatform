@@ -94,11 +94,6 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             }
 
             var isAdmin = StoreAdminRepo.StoreAdmins.Any(x => x.ChatId == subscriberRecord.ChatId);
-            //if (!isAdmin)
-            //{
-            //    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "شرمنده شما مدیر بات نیستید. فعلا فقط بخش مدیریت بات رو توسعه دادیم.");
-            //    return;
-            //}
 
             switch (update.Message.Text)
             {
@@ -118,6 +113,13 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                     using (var db = new Db())
                     {
                         var products = db.StoreProductRecords.AsNoTracking().Where(x => x.BotInstanceRecordId == Id);
+
+                        if (!products.Any())
+                        {
+                            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "محصولی برای نمایش وجود ندارد");
+                            return;
+                        }
+
                         var i = 0;
                         var productDetailTemplate = SettingRepo.Load<Setting>().ProductDetailTemplate;
 
