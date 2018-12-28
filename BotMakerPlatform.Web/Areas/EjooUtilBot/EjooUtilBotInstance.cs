@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Web.Mvc.Routing.Constraints;
 using BotMakerPlatform.Web.Areas.EjooUtilBot.Repo;
-using BotMakerPlatform.Web.Areas.SupportBot.Repo;
 using BotMakerPlatform.Web.Repo;
 using iText.IO.Image;
 using iText.Kernel.Geom;
@@ -22,8 +20,8 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         public const string StartCommand = "/start";
         public const string FlushCommand = "/flush";
 
-        public static IReplyMarkup StartReplyMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { StartCommand });
-        public static IReplyMarkup FlusMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { FlushCommand });
+        public static IReplyMarkup StartReplyMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { StartCommand }, resizeKeyboard: true);
+        public static IReplyMarkup FlusMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { FlushCommand }, resizeKeyboard: true);
     }
 
     public class EjooUtilBotInstance : IBotInstance
@@ -32,15 +30,12 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         public string Username { get; set; }
 
         private ImagesQueueRepo ImagesQueueRepo { get; }
-        private SettingRepo SettingRepo { get; }
         private ITelegramBotClient TelegramClient { get; }
 
         public EjooUtilBotInstance(
-            SettingRepo settingRepo,
             ImagesQueueRepo imagesQueueRepo,
             ITelegramBotClient telegramClient)
         {
-            SettingRepo = settingRepo;
             ImagesQueueRepo = imagesQueueRepo;
             TelegramClient = telegramClient;
         }

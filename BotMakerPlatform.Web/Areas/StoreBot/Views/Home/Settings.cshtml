@@ -1,0 +1,23 @@
+﻿@model BotMakerPlatform.Web.Areas.StoreBot.Models.Setting
+
+@{
+    ViewBag.Title = "Store bot - Settings";
+}
+
+<fieldset>
+    <legend>Settings</legend>
+    @using (Html.BeginForm("Settings", "Home"))
+    {
+        <div class="form-group">
+            @Html.LabelFor(x => x.WelcomeMessage)
+            <textarea type="text" class="form-control" id="@Html.IdFor(x => x.WelcomeMessage)" name="@Html.NameFor(x => x.WelcomeMessage)" aria-describedby="WelcomeMessageHelp" placeholder="Enter Welcome Message" style="height: 130px;">@Model.WelcomeMessage</textarea>
+            <small id="WelcomeMessageHelp" class="form-text text-muted">It will sent back to user when received /start command.</small>
+        </div>
+        <div class="form-group">
+            @Html.LabelFor(x => x.ProductDetailTemplate)
+            <textarea type="text" class="form-control" id="@Html.IdFor(x => x.ProductDetailTemplate)" name="@Html.NameFor(x => x.ProductDetailTemplate)" aria-describedby="ProductDetailTemplateHelp" placeholder="Enter Product Detail Template" style="height: 230px;">@Model.ProductDetailTemplate</textarea>
+            <small id="ProductDetailTemplateHelp" class="form-text text-muted">It will be used to render product detail.</small>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    }
+</fieldset>

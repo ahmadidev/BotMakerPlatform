@@ -4,6 +4,7 @@ using BotMakerPlatform.Web.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using SettingRepo = BotMakerPlatform.Web.Areas.SupportBot.Repo.SettingRepo;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot
 {

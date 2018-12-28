@@ -1,12 +1,13 @@
 ﻿using System.Linq;
 using System.Web.Mvc;
+using BotMakerPlatform.Web.Areas.StoreBot.Models;
 using BotMakerPlatform.Web.BotModule;
+using BotMakerPlatform.Web.Repo;
 
 namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
 {
     public class HomeController : BaseController
     {
-
         public ActionResult Index()
         {
             //What an acidi method...
@@ -24,6 +25,26 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
                 .ToList();
 
             return View(storeSubscribers);
+        }
+
+        [HttpGet]
+        public ActionResult Settings()
+        {
+            var settingRepo = new SettingRepo(BotInstanceId, new Db());
+            var model = settingRepo.Load<Setting>();
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public ActionResult Settings(Setting setting)
+        {
+            var settingRepo = new SettingRepo(BotInstanceId, new Db());
+            settingRepo.Save(setting);
+
+            TempData["Message"] = "تنظیمات جدید با موفقیت ثبت شد";
+
+            return RedirectToAction("Settings");
         }
 
         [HttpPost]

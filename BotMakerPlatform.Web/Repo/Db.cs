@@ -13,6 +13,7 @@ namespace BotMakerPlatform.Web.Repo
 
         public IDbSet<BotInstanceRecord> BotInstanceRecords { get; set; }
         public IDbSet<SubscriberRecord> Subscribers { get; set; }
+        public IDbSet<SettingRecord> Settings { get; set; }
 
         //Bot Modules
         public IDbSet<StoreProductRecord> StoreProductRecords { get; set; }
@@ -30,6 +31,11 @@ namespace BotMakerPlatform.Web.Repo
                 .Entity<SubscriberRecord>()
                 .HasKey(x => new {x.BotInstanceRecordId, x.ChatId})
                 .Property(x => x.ChatId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+
+            modelBuilder
+                .Entity<SettingRecord>()
+                .HasKey(x => x.BotInstanceRecordId)
+                .Property(x => x.BotInstanceRecordId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
 
             //Bots Data
             //modelBuilder.Entity<StoreProductRecord>()

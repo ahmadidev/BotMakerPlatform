@@ -225,6 +225,7 @@
     <Content Include="Content\bootstrap-grid.css.map" />
     <Content Include="Areas\EjooUtilBot\Views\_ViewStart.cshtml" />
     <Content Include="Areas\EjooUtilBot\Views\Home\Index.cshtml" />
+    <Content Include="Areas\StoreBot\Views\Home\Settings.cshtml" />
     <None Include="Properties\PublishProfiles\FolderProfile.pubxml" />
     <None Include="Scripts\jquery-3.3.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.3.1.js" />
@@ -267,6 +268,8 @@
     <Compile Include="Areas\StoreBot\Controllers\HomeController.cs" />
     <Compile Include="Areas\StoreBot\Controllers\StoreAdminRepo.cs" />
     <Compile Include="Areas\StoreBot\Controllers\StoreSubscriber.cs" />
+    <Compile Include="ISettingable.cs" />
+    <Compile Include="Areas\StoreBot\Models\Setting.cs" />
     <Compile Include="Areas\StoreBot\Record\StoreProductRecord.cs" />
     <Compile Include="Areas\StoreBot\StoreAdmin.cs" />
     <Compile Include="Areas\StoreBot\StoreBotDefinition.cs" />
@@ -301,6 +304,8 @@
     </Compile>
     <Compile Include="IBotInstance.cs" />
     <Compile Include="Repo\Db.cs" />
+    <Compile Include="Repo\SettingRecord.cs" />
+    <Compile Include="Repo\SettingRepo.cs" />
     <Compile Include="SimulatorBotClient.cs" />
     <Compile Include="Repo\SubscriberRepo.cs" />
     <Compile Include="Controllers\AccountController.cs" />
@@ -336,9 +341,7 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Areas\StoreBot\Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>

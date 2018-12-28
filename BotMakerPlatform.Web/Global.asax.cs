@@ -30,8 +30,6 @@ namespace BotMakerPlatform.Web
         {
             var ex = Server.GetLastError().GetBaseException();
             HomeController.LogRecords.Add($"Error ({ex.GetType().Name}): {ex.Message} - {ex.StackTrace}");
-
-            Server.ClearError();
         }
 
         protected void Session_End(object sender, EventArgs e)

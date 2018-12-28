@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Globalization;
 using System.Linq;
-using System.Text;
+using System.Threading.Tasks;
 using BotMakerPlatform.Web.Areas.StoreBot.Controllers;
+using BotMakerPlatform.Web.Areas.StoreBot.Models;
 using BotMakerPlatform.Web.Areas.StoreBot.Record;
 using BotMakerPlatform.Web.Repo;
 using Telegram.Bot;
@@ -23,8 +23,8 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             public const string ListProductsCommand = "لیست محصولات";
             public const string CancelCommand = "لغو";
 
-            public static IReplyMarkup StartAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { NewProductCommand, ListProductsCommand });
-            public static IReplyMarkup AddingProductAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { CancelCommand });
+            public static IReplyMarkup StartAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { NewProductCommand, ListProductsCommand }, resizeKeyboard: true);
+            public static IReplyMarkup AddingProductAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { CancelCommand }, resizeKeyboard: true);
             public static IReplyMarkup Empty => new ReplyKeyboardRemove();
         }
     }
@@ -33,8 +33,9 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
     {
         public int Id { get; set; }
         public string Username { get; set; }
+
         private ITelegramBotClient TelegramClient { get; }
-        private static readonly CultureInfo FaCulture = new CultureInfo("fa-IR");
+        private SettingRepo SettingRepo { get; }
 
         public enum NewProductSteps
         {
@@ -60,9 +61,10 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
         private static readonly Dictionary<long, NewProductInState> NewProductStates = new Dictionary<long, NewProductInState>();
 
-        public StoreBotInstance(ITelegramBotClient telegramClient)
+        public StoreBotInstance(ITelegramBotClient telegramClient, SettingRepo settingRepo)
         {
             TelegramClient = telegramClient;
+            SettingRepo = settingRepo;
         }
 
         public void Update(Update update, SubscriberRecord subscriberRecord)
@@ -82,7 +84,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
             switch (update.Message.Text)
             {
-                case "/start":
+                case StateManager.Keyboards.StartCommand:
                     TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "به فروشگاه ما خوش آمدید", replyMarkup: StateManager.Keyboards.StartAdmin);
                     break;
                 case StateManager.Keyboards.NewProductCommand:
@@ -98,14 +100,23 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                     using (var db = new Db())
                     {
                         var products = db.StoreProductRecords.AsNoTracking().Where(x => x.BotInstanceRecordId == Id);
-
-                        var sb = new StringBuilder();
                         var i = 0;
+                        var productDetailTemplate = SettingRepo.Load<Setting>().ProductDetailTemplate;
 
                         foreach (var product in products)
-                            sb.AppendLine($"{++i}- **{product.Name}** ({product.Code}) - {product.Price.ToString("C0", FaCulture)}");
+                        {
+                            var detail = productDetailTemplate
+                                .Replace("[Index]", (++i).ToString())
+                                .Replace("[Name]", product.Name)
+                                .Replace("[Code]", product.Code)
+                                .Replace("[Price]", product.Price.ToCurrency())
+                                .Replace("[Description]", product.Description);
 
-                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, sb.ToString(), ParseMode.Markdown, replyMarkup: StateManager.Keyboards.StartAdmin);
+                            Task.Delay(i * 10).ContinueWith(task =>
+                            {
+                                TelegramClient.SendPhotoAsync(subscriberRecord.ChatId, product.ImageFileId, detail, parseMode: ParseMode.Markdown, replyMarkup: StateManager.Keyboards.StartAdmin);
+                            });
+                        }
                     }
                     break;
                 case StateManager.Keyboards.CancelCommand:
