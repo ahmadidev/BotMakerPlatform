@@ -24,6 +24,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             public const string CancelCommand = "لغو";
 
             public static IReplyMarkup StartAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { NewProductCommand, ListProductsCommand }, resizeKeyboard: true);
+            public static IReplyMarkup StartUser => new ReplyKeyboardMarkup(new KeyboardButton[] { ListProductsCommand }, resizeKeyboard: true);
             public static IReplyMarkup AddingProductAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { CancelCommand }, resizeKeyboard: true);
             public static IReplyMarkup Empty => new ReplyKeyboardRemove();
         }
@@ -71,18 +72,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
         {
             if (update.Type == UpdateType.CallbackQuery)
             {
-                var parts = update.CallbackQuery.Data.Split(':');
-                if (parts.Length == 2 && parts[0] == "delete" && int.TryParse(parts[1], out var productId))
-                {
-                    using (var db = new Db())
-                    {
-                        db.Entry(new StoreProductRecord { Id = productId }).State = EntityState.Deleted;
-                        db.SaveChanges();
-
-                        TelegramClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "محصول با موفقیت حذف شد.");
-                        TelegramClient.DeleteMessageAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId);
-                    }
-                }
+                HandleCallbackQuery(update);
 
                 return;
             }
@@ -98,9 +88,15 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             switch (update.Message.Text)
             {
                 case StateManager.Keyboards.StartCommand:
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, SettingRepo.Load<Setting>().WelcomeMessage, parseMode: ParseMode.Markdown, replyMarkup: StateManager.Keyboards.StartAdmin);
+                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, SettingRepo.Load<Setting>().WelcomeMessage, parseMode: ParseMode.Markdown, replyMarkup: isAdmin ? StateManager.Keyboards.StartAdmin : StateManager.Keyboards.StartUser);
                     break;
                 case StateManager.Keyboards.NewProductCommand:
+                    if (!isAdmin)
+                    {
+                        TelegramClient.SendTextMessageAsync(update.Message.Chat.Id, "متاسفانه مجوز اجرای این دستور را ندارید.");
+                        return;
+                    }
+
                     if (!NewProductStates.TryGetValue(subscriberRecord.ChatId, out _))
                         NewProductStates.Add(subscriberRecord.ChatId, null);
 
@@ -116,7 +112,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
                         if (!products.Any())
                         {
-                            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "محصولی برای نمایش وجود ندارد");
+                            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "محصولی برای نمایش وجود ندارد.");
                             return;
                         }
 
@@ -138,7 +134,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                                     subscriberRecord.ChatId,
                                     product.ImageFileId, detail,
                                     parseMode: ParseMode.Markdown,
-                                    replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData("حذف", "delete:" + product.Id)));
+                                    replyMarkup: !isAdmin ? null : new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData("حذف", "delete:" + product.Id)));
                             });
                         }
                     }
@@ -151,10 +147,47 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                     break;
                 default:
                     if (NewProductStates.TryGetValue(subscriberRecord.ChatId, out _))
+                    {
+                        if (!isAdmin)
+                        {
+                            TelegramClient.SendTextMessageAsync(update.Message.Chat.Id, "متاسفانه مجوز اجرای این دستور را ندارید.");
+                            return;
+                        }
+
                         HandleNewProductMessage(update, subscriberRecord);
+                    }
                     else
                         TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "متوجه پیام نشدم..");
                     break;
+            }
+        }
+
+        private void HandleCallbackQuery(Update update)
+        {
+            var parts = update.CallbackQuery.Data.Split(':');
+            if (parts.Length == 2 && parts[0] == "delete" && int.TryParse(parts[1], out var productId))
+            {
+                var isAdmin = StoreAdminRepo.StoreAdmins.Any(x => x.ChatId == update.CallbackQuery.Message.Chat.Id);
+
+                if (!isAdmin)
+                {
+                    TelegramClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "متاسفانه مجوز اجرای این دستور را ندارید.");
+                    return;
+                }
+
+                using (var db = new Db())
+                {
+                    var product = db.StoreProductRecords.SingleOrDefault(x => x.Id == productId);
+
+                    if (product != null)
+                    {
+                        db.StoreProductRecords.Remove(product);
+                        db.SaveChanges();
+                    }
+
+                    TelegramClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "محصول با موفقیت حذف شد.");
+                    TelegramClient.DeleteMessageAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId);
+                }
             }
         }
 
