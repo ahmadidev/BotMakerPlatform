@@ -85,7 +85,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             switch (update.Message.Text)
             {
                 case StateManager.Keyboards.StartCommand:
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "به فروشگاه ما خوش آمدید", replyMarkup: StateManager.Keyboards.StartAdmin);
+                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, SettingRepo.Load<Setting>().WelcomeMessage, parseMode: ParseMode.Markdown, replyMarkup: StateManager.Keyboards.StartAdmin);
                     break;
                 case StateManager.Keyboards.NewProductCommand:
                     if (!NewProductStates.TryGetValue(subscriberRecord.ChatId, out _))
@@ -112,9 +112,13 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                                 .Replace("[Price]", product.Price.ToCurrency())
                                 .Replace("[Description]", product.Description);
 
-                            Task.Delay(i * 10).ContinueWith(task =>
+                            Task.Delay(i * 50).ContinueWith(task =>
                             {
-                                TelegramClient.SendPhotoAsync(subscriberRecord.ChatId, product.ImageFileId, detail, parseMode: ParseMode.Markdown, replyMarkup: StateManager.Keyboards.StartAdmin);
+                                TelegramClient.SendPhotoAsync(
+                                    subscriberRecord.ChatId,
+                                    product.ImageFileId, detail,
+                                    parseMode: ParseMode.Markdown,
+                                    replyMarkup: StateManager.Keyboards.StartAdmin);
                             });
                         }
                     }
