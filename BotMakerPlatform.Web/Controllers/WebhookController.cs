@@ -32,7 +32,7 @@ namespace BotMakerPlatform.Web.Controllers
             //HomeController.LogRecords.Add(update.Message.Chat.FirstName);
 
             var webhookUpdateDto = new WebhookUpdateDto { Update = update, BotInstanceId = botInstanceId, Secret = secret };
-            HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {update.Type} MessageType: {update.Message.Type}.");
+            HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {update.Type} MessageType: {update.Message?.Type}.");
 
             BotInstanceRecord botInstanceRecord;
             using (var db = new Db())
@@ -56,8 +56,11 @@ namespace BotMakerPlatform.Web.Controllers
 
                 SubscriberRepo = scope.Resolve<SubscriberRepo>();
 
-                //TODO: We assume update is always a message
-                var subscriber = GetSubscriber(webhookUpdateDto.Update.Message.Chat.Id) ?? AddSubscriber(webhookUpdateDto.Update);
+                SubscriberRecord subscriber = null;
+
+                if (update.Type == UpdateType.Message)
+                    subscriber = GetSubscriber(webhookUpdateDto.Update.Message.Chat.Id) ?? AddSubscriber(webhookUpdateDto.Update);
+
                 botInstance.Update(webhookUpdateDto.Update, subscriber);
             }
 
