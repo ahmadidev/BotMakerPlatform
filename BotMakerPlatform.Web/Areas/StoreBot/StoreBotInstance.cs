@@ -69,6 +69,24 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
         public void Update(Update update, SubscriberRecord subscriberRecord)
         {
+            if (update.Type == UpdateType.CallbackQuery)
+            {
+                var parts = update.CallbackQuery.Data.Split(':');
+                if (parts.Length == 2 && parts[0] == "delete" && int.TryParse(parts[1], out var productId))
+                {
+                    using (var db = new Db())
+                    {
+                        db.Entry(new StoreProductRecord { Id = productId }).State = EntityState.Deleted;
+                        db.SaveChanges();
+
+                        TelegramClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "محصول با موفقیت حذف شد.");
+                        TelegramClient.DeleteMessageAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId);
+                    }
+                }
+
+                return;
+            }
+
             if (update.Type != UpdateType.Message)
             {
                 TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"ببخشید، فعلا این چیزا ({update.Type}) رو متوجه نمیشم");
@@ -112,13 +130,13 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                                 .Replace("[Price]", product.Price.ToCurrency())
                                 .Replace("[Description]", product.Description);
 
-                            Task.Delay(i * 50).ContinueWith(task =>
+                            Task.Delay(i * 500).ContinueWith(task =>
                             {
                                 TelegramClient.SendPhotoAsync(
                                     subscriberRecord.ChatId,
                                     product.ImageFileId, detail,
                                     parseMode: ParseMode.Markdown,
-                                    replyMarkup: StateManager.Keyboards.StartAdmin);
+                                    replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData("حذف", "delete:" + product.Id)));
                             });
                         }
                     }
