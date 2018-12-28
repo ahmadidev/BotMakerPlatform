@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
+using BotMakerPlatform.Web.Areas.StoreBot.Record;
 
 namespace BotMakerPlatform.Web.Repo
 {
@@ -12,6 +13,9 @@ namespace BotMakerPlatform.Web.Repo
 
         public IDbSet<BotInstanceRecord> BotInstanceRecords { get; set; }
         public IDbSet<SubscriberRecord> Subscribers { get; set; }
+
+        //Bot Modules
+        public IDbSet<StoreProductRecord> StoreProductRecords { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -26,6 +30,9 @@ namespace BotMakerPlatform.Web.Repo
                 .Entity<SubscriberRecord>()
                 .HasKey(x => new {x.BotInstanceRecordId, x.ChatId})
                 .Property(x => x.ChatId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+
+            //Bots Data
+            //modelBuilder.Entity<StoreProductRecord>()
         }
     }
 }
