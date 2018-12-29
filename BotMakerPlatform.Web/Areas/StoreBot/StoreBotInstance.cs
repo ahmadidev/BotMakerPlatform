@@ -80,10 +80,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             }
 
             if (update.Type != UpdateType.Message)
-            {
-                TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"ببخشید، فعلا این چیزا ({update.Type}) رو متوجه نمیشم");
                 return;
-            }
 
             var isAdmin = StoreAdminRepo.GetAdmin(subscriberRecord.ChatId) != null;
 
