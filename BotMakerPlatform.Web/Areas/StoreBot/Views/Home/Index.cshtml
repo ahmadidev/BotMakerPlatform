@@ -11,9 +11,8 @@
     <thead>
         <tr>
             <th scope="col">#</th>
-            <th scope="col">Username</th>
-            <th scope="col">First</th>
-            <th scope="col">Last</th>
+            <th scope="col">User</th>
+            <th scope="col">#</th>
         </tr>
     </thead>
     <tbody>
@@ -25,11 +24,10 @@
                 <td>
                     @if (subscriber.IsAdmin)
                     {
-                        <text>✅</text>
-
                         using (Html.BeginForm("RemoveAdmin", "Home", new { subscriber.ChatId }))
                         {
                             <button>Remove Admin</button>
+                            <text>✅</text>
                         }
                     }
                     else

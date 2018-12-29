@@ -23,11 +23,14 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Repo
 
         public IEnumerable<StoreAdminRecord> GetAllAdmins()
         {
-            return Db.StoreAdminRecords.AsNoTracking();
+            return Db.StoreAdminRecords.AsNoTracking().Where(x => x.BotInstanceRecordId == BotInstanceId);
         }
 
         public void AddAdmin(long chatId)
         {
+            if (GetAdmin(chatId) != null)
+                return;
+
             Db.StoreAdminRecords.Add(new StoreAdminRecord { ChatId = chatId, BotInstanceRecordId = BotInstanceId });
             Db.SaveChanges();
         }
