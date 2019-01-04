@@ -19,6 +19,7 @@ namespace BotMakerPlatform.Web.Repo
         //Bot Modules
         public IDbSet<StoreProductRecord> StoreProductRecords { get; set; }
         public IDbSet<StoreAdminRecord> StoreAdminRecords { get; set; }
+        public IDbSet<ImageFileRecord> ImageFileRecords { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

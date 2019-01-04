@@ -25,10 +25,9 @@
                 <td>
                     @if (subscriber.IsAdmin)
                     {
-                        <text>✅</text>
-
                         using (Html.BeginForm("RemoveAdmin", "Home", new { subscriber.ChatId }))
                         {
+                            <text>✅</text>
                             <button>Remove Admin</button>
                         }
                     }

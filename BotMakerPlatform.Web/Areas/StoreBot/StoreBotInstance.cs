@@ -22,10 +22,13 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             public const string NewProductCommand = "محصول جدید";
             public const string ListProductsCommand = "لیست محصولات";
             public const string CancelCommand = "لغو";
+            public const string AddProductSkip = "رد کردن";
+            public const string AddProductSubmit = "ثبت";
 
             public static IReplyMarkup StartAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { NewProductCommand, ListProductsCommand }, resizeKeyboard: true);
             public static IReplyMarkup StartUser => new ReplyKeyboardMarkup(new KeyboardButton[] { ListProductsCommand }, resizeKeyboard: true);
-            public static IReplyMarkup AddingProductAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { CancelCommand }, resizeKeyboard: true);
+            public static IReplyMarkup AddingProductAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { CancelCommand, AddProductSkip }, resizeKeyboard: true);
+            public static IReplyMarkup AddingProductImagesAdmin => new ReplyKeyboardMarkup(new KeyboardButton[] { CancelCommand, AddProductSubmit }, resizeKeyboard: true);
             public static IReplyMarkup Empty => new ReplyKeyboardRemove();
         }
     }
@@ -46,7 +49,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             Code,
             Price,
             Desciption,
-            Image
+            Images
         }
 
         public class NewProductInState
@@ -130,13 +133,22 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                                 .Replace("[Price]", product.Price.ToCurrency())
                                 .Replace("[Description]", product.Description);
 
+                            var buttons = new List<InlineKeyboardButton>
+                            {
+                                InlineKeyboardButton.WithCallbackData($"تصاویر", "image:" + product.Id)
+                            };
+
+                            if (isAdmin)
+                                buttons.Add(InlineKeyboardButton.WithCallbackData("حذف", "delete:" + product.Id));
+
                             Task.Delay(i * 500).ContinueWith(task =>
                             {
                                 TelegramClient.SendPhotoAsync(
                                     subscriberRecord.ChatId,
-                                    product.ImageFileId, detail,
+                                    product.ImageFileRecords.First().ImageFileId,
+                                    detail,
                                     parseMode: ParseMode.Markdown,
-                                    replyMarkup: !isAdmin ? null : new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData("حذف", "delete:" + product.Id)));
+                                    replyMarkup: new InlineKeyboardMarkup(buttons));
                             });
                         }
                     }
@@ -202,42 +214,80 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                     TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "نام محصول:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                     break;
                 case NewProductSteps.Name:
+                    if (update.Message.Text == StateManager.Keyboards.AddProductSkip)
+                    {
+                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "برای کارکرد بهتر بات لطفا نام محصول را وارد نمایید:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+                        return;
+                    }
+
                     NewProductStates[subscriberRecord.ChatId].ProductRecord.Name = update.Message.Text;
                     NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Code;
                     TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "کد:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                     break;
                 case NewProductSteps.Code:
-                    NewProductStates[subscriberRecord.ChatId].ProductRecord.Code = update.Message.Text;
+                    if (update.Message.Text != StateManager.Keyboards.AddProductSkip)
+                        NewProductStates[subscriberRecord.ChatId].ProductRecord.Code = update.Message.Text;
+
                     NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Price;
                     TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "قیمت:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                     break;
                 case NewProductSteps.Price:
-                    if (!int.TryParse(update.Message.Text, out var price))
+                    if (update.Message.Text != StateManager.Keyboards.AddProductSkip)
                     {
-                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "قیمت وارد شده صحیح نیست. یک مقدار عددی وارد کنید.", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
-                        return;
+                        if (!int.TryParse(update.Message.Text, out var price))
+                        {
+                            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "قیمت وارد شده صحیح نیست. یک مقدار عددی وارد کنید.", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+                            return;
+                        }
+
+                        NewProductStates[subscriberRecord.ChatId].ProductRecord.Price = price;
                     }
 
-                    NewProductStates[subscriberRecord.ChatId].ProductRecord.Price = price;
                     NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Desciption;
                     TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "توضیحات:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                     break;
                 case NewProductSteps.Desciption:
-                    NewProductStates[subscriberRecord.ChatId].ProductRecord.Description = update.Message.Text;
-                    NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Image;
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "تصویر:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
-                    break;
-                case NewProductSteps.Image:
-                    NewProductStates[subscriberRecord.ChatId].ProductRecord.ImageFileId = update.Message.Photo.Last().FileId;
+                    if (update.Message.Text != StateManager.Keyboards.AddProductSkip)
+                        NewProductStates[subscriberRecord.ChatId].ProductRecord.Description = update.Message.Text;
 
-                    using (var db = new Db())
+                    NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Images;
+                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "تصاویر:", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
+                    break;
+                case NewProductSteps.Images:
+                    if (StateManager.Keyboards.AddProductSubmit == update.Message.Text)
                     {
-                        db.StoreProductRecords.Add(NewProductStates[subscriberRecord.ChatId].ProductRecord);
-                        db.SaveChanges();
+                        var hasImage = NewProductStates[subscriberRecord.ChatId].ProductRecord.ImageFileRecords.Any();
+
+                        if (!hasImage)
+                        {
+                            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "برای کارکرد بهتر بات حداقل یک تصویر ارسال نمایید", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
+                            return;
+                        }
+
+                        using (var db = new Db())
+                        {
+                            db.StoreProductRecords.Add(NewProductStates[subscriberRecord.ChatId].ProductRecord);
+                            db.SaveChanges();
+                        }
+
+                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "محصول شما با موفقیت ثبت گردید", replyMarkup: StateManager.Keyboards.StartAdmin);
+                        NewProductStates.Remove(subscriberRecord.ChatId);
+
+                        return;
                     }
 
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "محصول شما با موفقیت ثبت گردید", replyMarkup: StateManager.Keyboards.StartAdmin);
-                    NewProductStates.Remove(subscriberRecord.ChatId);
+                    if (update.Message.Type != MessageType.Photo)
+                    {
+                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "لطفا تصویر ارسال نمایید", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
+                        return;
+                    }
+
+                    NewProductStates[subscriberRecord.ChatId].ProductRecord.ImageFileRecords.Add(
+                        new ImageFileRecord
+                        {
+                            ImageFileId = update.Message.Photo.Last().FileId,
+                            StoreProductRecordId = Id
+                        });
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

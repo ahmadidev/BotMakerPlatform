@@ -266,6 +266,7 @@
     <Compile Include="Areas\EjooUtilBot\Repo\ImageCountRepo.cs" />
     <Compile Include="Areas\EjooUtilBot\Repo\ImagesQueueRepo.cs" />
     <Compile Include="Areas\StoreBot\Controllers\HomeController.cs" />
+    <Compile Include="Areas\StoreBot\Record\ImageFileRecord.cs" />
     <Compile Include="Areas\StoreBot\Record\StoreSubscriber.cs" />
     <Compile Include="Areas\StoreBot\Repo\StoreRepo.cs" />
     <Compile Include="ISettingable.cs" />
