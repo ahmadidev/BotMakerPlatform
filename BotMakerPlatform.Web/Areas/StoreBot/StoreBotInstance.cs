@@ -396,12 +396,12 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                         NewProductStates[chatId].ProductRecord.Code = update.Message.Text;
 
                     NewProductStates[chatId].NewProductStep = NewProductSteps.Price;
-                    TelegramClient.SendTextMessageAsync(chatId, "قیمت:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+                    TelegramClient.SendTextMessageAsync(chatId, "قیمت (ریال):", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                     break;
                 case NewProductSteps.Price:
                     if (update.Message.Text != StateManager.Keyboards.AddProductSkip)
                     {
-                        if (!int.TryParse(update.Message.Text, out var price))
+                        if (!int.TryParse(update.Message.Text.ToEnglishDigits(), out var price))
                         {
                             TelegramClient.SendTextMessageAsync(chatId, "قیمت وارد شده صحیح نیست. یک مقدار عددی وارد کنید.", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                             return;

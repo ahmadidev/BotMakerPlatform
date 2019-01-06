@@ -32,5 +32,19 @@ namespace BotMakerPlatform.Web
 
             return text;
         }
+
+        public static string ToEnglishDigits(this string text)
+        {
+            var faNativeDigits = FaCulture.NumberFormat.NativeDigits;
+            var arNativeDigits = CultureInfo.GetCultureInfo("ar").NumberFormat.NativeDigits;
+
+            for (var i = 0; i < faNativeDigits.Length; i++)
+                text = text.Replace(faNativeDigits[i], i.ToString());
+
+            for (var i = 0; i < arNativeDigits.Length; i++)
+                text = text.Replace(faNativeDigits[i], i.ToString());
+
+            return text;
+        }
     }
 }
