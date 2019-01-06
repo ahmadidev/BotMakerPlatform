@@ -393,7 +393,26 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                     break;
                 case NewProductSteps.Code:
                     if (update.Message.Text != StateManager.Keyboards.AddProductSkip)
+                    {
+                        if (!NewProductStates[chatId].IsEdit ||
+                            (NewProductStates[chatId].IsEdit && NewProductStates[chatId].ProductRecord.Code != update.Message.Text))
+                        {
+                            using (var db = new Db())
+                            {
+                                var duplicateCodeProduct = db.StoreProductRecords.SingleOrDefault(x => x.BotInstanceRecordId == Id && x.Code == update.Message.Text);
+
+                                if (duplicateCodeProduct != null)
+                                {
+                                    TelegramClient.SendTextMessageAsync(chatId,
+                                        $"کد وارد شده با کد محصول {duplicateCodeProduct.Name} یکسان است. لطفا یک کد یکتا وارد کنید:",
+                                        replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+
+                                    return;
+                                }
+                            }
+                        }
                         NewProductStates[chatId].ProductRecord.Code = update.Message.Text;
+                    }
 
                     NewProductStates[chatId].NewProductStep = NewProductSteps.Price;
                     TelegramClient.SendTextMessageAsync(chatId, "قیمت (ریال):", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
