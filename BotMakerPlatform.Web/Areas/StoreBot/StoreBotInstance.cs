@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using BotMakerPlatform.Web.Areas.StoreBot.Models;
 using BotMakerPlatform.Web.Areas.StoreBot.Record;
 using BotMakerPlatform.Web.Areas.StoreBot.Repo;
+using BotMakerPlatform.Web.Controllers;
 using BotMakerPlatform.Web.Repo;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -56,10 +57,12 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
         {
             public NewProductInState()
             {
+                IsEdit = false;
                 NewProductStep = NewProductSteps.Begin;
                 ProductRecord = new StoreProductRecord();
             }
 
+            public bool IsEdit { get; set; }
             public NewProductSteps NewProductStep { get; set; }
             public StoreProductRecord ProductRecord { get; set; }
         }
@@ -78,7 +81,6 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             if (update.Type == UpdateType.CallbackQuery)
             {
                 HandleCallbackQuery(update);
-
                 return;
             }
 
@@ -110,7 +112,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                 case StateManager.Keyboards.ListProductsCommand:
                     using (var db = new Db())
                     {
-                        var products = db.StoreProductRecords.AsNoTracking().Where(x => x.BotInstanceRecordId == Id);
+                        var products = db.StoreProductRecords.Include(x => x.ImageFileRecords).AsNoTracking().Where(x => x.BotInstanceRecordId == Id);
 
                         if (!products.Any())
                         {
@@ -130,23 +132,31 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                                 .Replace("[Price]", product.Price.ToCurrency())
                                 .Replace("[Description]", product.Description);
 
-                            var buttons = new List<InlineKeyboardButton>
+                            var buttons = new List<List<InlineKeyboardButton>>
                             {
-                                InlineKeyboardButton.WithCallbackData($"تصاویر", "image:" + product.Id)
+                                new List<InlineKeyboardButton>
+                                {
+                                    InlineKeyboardButton.WithCallbackData($"تصاویر ({product.ImageFileRecords.Count})", "images:" + product.Id)
+                                }
                             };
 
                             if (isAdmin)
-                                buttons.Add(InlineKeyboardButton.WithCallbackData("حذف", "delete:" + product.Id));
+                                buttons.Add(GetAdminRow(product));
 
-                            Task.Delay(i * 500).ContinueWith(task =>
-                            {
-                                TelegramClient.SendPhotoAsync(
-                                    subscriberRecord.ChatId,
-                                    product.ImageFileRecords.First().ImageFileId,
-                                    detail,
-                                    parseMode: ParseMode.Markdown,
-                                    replyMarkup: new InlineKeyboardMarkup(buttons));
-                            });
+                            Task.Delay(i * 500)
+                                .ContinueWith(task =>
+                                {
+                                    TelegramClient.SendPhotoAsync(
+                                        subscriberRecord.ChatId,
+                                        product.ImageFileRecords.First().ImageFileId,
+                                        detail,
+                                        parseMode: ParseMode.Markdown,
+                                        replyMarkup: new InlineKeyboardMarkup(buttons));
+                                })
+                                .ContinueWith(task =>
+                                {
+                                    HomeController.LogRecords.Add("Delayed Message Exception: " + task.Exception?.GetBaseException().Message);
+                                }, TaskContinuationOptions.OnlyOnFaulted);
                         }
                     }
                     break;
@@ -173,19 +183,84 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             }
         }
 
+        private static List<InlineKeyboardButton> GetAdminRow(StoreProductRecord product)
+        {
+            return new List<InlineKeyboardButton>
+            {
+                InlineKeyboardButton.WithCallbackData("حذف", "delete_approve:" + product.Id),
+                InlineKeyboardButton.WithCallbackData("ویرایش", "edit:" + product.Id)
+            };
+        }
+
         private void HandleCallbackQuery(Update update)
         {
             var parts = update.CallbackQuery.Data.Split(':');
-            if (parts.Length == 2 && parts[0] == "delete" && int.TryParse(parts[1], out var productId))
-            {
-                var isAdmin = StoreAdminRepo.GetAdmin(update.CallbackQuery.Message.Chat.Id) != null;
 
+            var isAdmin = StoreAdminRepo.GetAdmin(update.CallbackQuery.Message.Chat.Id) != null;
+
+            if (parts.Length == 2 && parts[0] == "reset" && int.TryParse(parts[1], out var productId))
+            {
+                using (var db = new Db())
+                {
+                    var product = db.StoreProductRecords.SingleOrDefault(x => x.Id == productId);
+
+                    var rows = new List<List<InlineKeyboardButton>>
+                    {
+                        new List<InlineKeyboardButton>
+                        {
+                            InlineKeyboardButton.WithCallbackData($"تصاویر ({product.ImageFileRecords.Count})", "images:" + product.Id)
+                        }
+                    };
+
+                    if (isAdmin)
+                        rows.Add(GetAdminRow(product));
+
+                    TelegramClient.EditMessageReplyMarkupAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId, new InlineKeyboardMarkup(rows));
+                }
+            }
+            else if (parts.Length == 2 && parts[0] == "edit" && int.TryParse(parts[1], out productId))
+            {
                 if (!isAdmin)
                 {
                     TelegramClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "متاسفانه مجوز اجرای این دستور را ندارید.");
                     return;
                 }
 
+                using (var db = new Db())
+                {
+                    var product = db.StoreProductRecords.Include(x => x.ImageFileRecords).AsNoTracking().SingleOrDefault(x => x.Id == productId);
+                    var chatId = update.CallbackQuery.Message.Chat.Id;
+
+                    if (!NewProductStates.TryGetValue(chatId, out _))
+                        NewProductStates.Add(chatId, null);
+
+                    NewProductStates[chatId] = new NewProductInState();
+                    NewProductStates[chatId].IsEdit = true;
+                    NewProductStates[chatId].ProductRecord = product;
+
+                    HandleNewProductMessage(update, new SubscriberRecord { ChatId = chatId });
+                }
+            }
+            else if (parts.Length == 2 && parts[0] == "delete_approve" && int.TryParse(parts[1], out productId))
+            {
+                if (!isAdmin)
+                {
+                    TelegramClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "متاسفانه مجوز اجرای این دستور را ندارید.");
+                    return;
+                }
+
+                var optionButtons = new[]
+                {
+                    InlineKeyboardButton.WithCallbackData("بیخیال", "reset:" + productId),
+                    InlineKeyboardButton.WithCallbackData("نه، اصلا", "reset:" + productId),
+                    InlineKeyboardButton.WithCallbackData("مطمئنم، حذفش کن", "delete:" + productId)
+                };
+                var rows = optionButtons.OrderBy(x => Guid.NewGuid()).Select(x => new List<InlineKeyboardButton> { x });
+
+                TelegramClient.EditMessageReplyMarkupAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId, new InlineKeyboardMarkup(rows));
+            }
+            else if (parts.Length == 2 && parts[0] == "delete" && int.TryParse(parts[1], out productId))
+            {
                 using (var db = new Db())
                 {
                     var product = db.StoreProductRecords.SingleOrDefault(x => x.Id == productId);
@@ -200,90 +275,217 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                     TelegramClient.DeleteMessageAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId);
                 }
             }
+            else if (parts.Length == 2 && parts[0] == "images" && int.TryParse(parts[1], out productId))
+            {
+                using (var db = new Db())
+                {
+                    var product = db.StoreProductRecords.Single(x => x.Id == productId);
+                    var total = product.ImageFileRecords.Count;
+                    var secondImageFileId = product.ImageFileRecords.Skip(total > 1 ? 1 : 0).First().ImageFileId;
+                    var currentIndex = product.ImageFileRecords.Select(x => x.ImageFileId).ToList().IndexOf(secondImageFileId) + 1;
+
+                    var rows = new List<InlineKeyboardButton>
+                    {
+                        InlineKeyboardButton.WithCallbackData("<<", $"images_prev:{currentIndex},{productId}"),
+                        InlineKeyboardButton.WithCallbackData($"تصویر {currentIndex} از {total}"),
+                        InlineKeyboardButton.WithCallbackData(">>", $"images_next:{currentIndex},{productId}")
+                    };
+
+                    TelegramClient.SendPhotoAsync(update.CallbackQuery.Message.Chat.Id, secondImageFileId, replyMarkup: new InlineKeyboardMarkup(rows));
+                }
+            }
+            else if (parts.Length == 2 && parts[0] == "images_next")
+            {
+                using (var db = new Db())
+                {
+                    var currentIndex = int.Parse(parts[1].Split(',')[0]);
+                    productId = int.Parse(parts[1].Split(',')[1]);
+
+                    var product = db.StoreProductRecords.Single(x => x.Id == productId);
+                    var total = product.ImageFileRecords.Count;
+
+                    if (currentIndex < total)
+                        currentIndex++;
+
+                    var rows = new List<InlineKeyboardButton>
+                    {
+                        InlineKeyboardButton.WithCallbackData("<<", $"images_prev:{currentIndex}," + productId),
+                        InlineKeyboardButton.WithCallbackData($"تصویر {currentIndex} از {total}", "images_nav_hide:" + productId),
+                        InlineKeyboardButton.WithCallbackData(">>", $"images_next:{currentIndex}," + productId)
+                    };
+
+                    var imageFileId = product.ImageFileRecords.Skip(total > 1 ? currentIndex - 1 : 0).First().ImageFileId;
+                    TelegramClient.EditMessageMediaAsync(
+                        update.CallbackQuery.Message.Chat.Id,
+                        update.CallbackQuery.Message.MessageId,
+                        new InputMediaPhoto(imageFileId),
+                        new InlineKeyboardMarkup(rows)
+                    );
+                }
+            }
+            else if (parts.Length == 2 && parts[0] == "images_prev")
+            {
+                using (var db = new Db())
+                {
+                    var currentIndex = int.Parse(parts[1].Split(',')[0]);
+                    productId = int.Parse(parts[1].Split(',')[1]);
+
+                    var product = db.StoreProductRecords.Single(x => x.Id == productId);
+                    var total = product.ImageFileRecords.Count;
+
+                    if (currentIndex > 1)
+                        currentIndex--;
+
+                    var rows = new List<InlineKeyboardButton>
+                    {
+                        InlineKeyboardButton.WithCallbackData("<<", $"images_prev:{currentIndex}," + productId),
+                        InlineKeyboardButton.WithCallbackData($"تصویر {currentIndex} از {total}", "images_nav_hide:" + productId),
+                        InlineKeyboardButton.WithCallbackData(">>", $"images_next:{currentIndex}," + productId)
+                    };
+
+                    var imageFileId = product.ImageFileRecords.Skip(total > 1 ? currentIndex - 1 : 0).First().ImageFileId;
+                    TelegramClient.EditMessageMediaAsync(
+                        update.CallbackQuery.Message.Chat.Id,
+                        update.CallbackQuery.Message.MessageId,
+                        new InputMediaPhoto(imageFileId),
+                        new InlineKeyboardMarkup(rows)
+                    );
+                }
+            }
+            else if (parts.Length == 2 && parts[0] == "delete_image")
+            {
+                var imageRecord = NewProductStates[update.CallbackQuery.Message.Chat.Id].ProductRecord.ImageFileRecords.SingleOrDefault(x => x.Id == int.Parse(parts[1]));
+
+                if (imageRecord != null)
+                {
+                    NewProductStates[update.CallbackQuery.Message.Chat.Id].ProductRecord.ImageFileRecords.Remove(imageRecord);
+                    TelegramClient.DeleteMessageAsync(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.MessageId);
+                    TelegramClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id, "عکس مورد نظر از محصول حذف شد.");
+                    return;
+                }
+            }
+
+            TelegramClient.AnswerCallbackQueryAsync(update.CallbackQuery.Id);
         }
 
         private void HandleNewProductMessage(Update update, SubscriberRecord subscriberRecord)
         {
-            switch (NewProductStates[subscriberRecord.ChatId].NewProductStep)
+            var chatId = subscriberRecord.ChatId;
+
+            switch (NewProductStates[chatId].NewProductStep)
             {
                 case NewProductSteps.Begin:
-                    NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Name;
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "نام محصول:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+                    NewProductStates[chatId].NewProductStep = NewProductSteps.Name;
+                    TelegramClient.SendTextMessageAsync(chatId, "نام محصول:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                     break;
                 case NewProductSteps.Name:
-                    if (update.Message.Text == StateManager.Keyboards.AddProductSkip)
+                    if (update.Message.Text == StateManager.Keyboards.AddProductSkip && !NewProductStates[chatId].IsEdit)
                     {
-                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "برای کارکرد بهتر بات لطفا نام محصول را وارد نمایید:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+                        TelegramClient.SendTextMessageAsync(chatId, "برای کارکرد بهتر بات لطفا نام محصول را وارد نمایید:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                         return;
                     }
 
-                    NewProductStates[subscriberRecord.ChatId].ProductRecord.Name = update.Message.Text;
-                    NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Code;
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "کد:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+                    if (update.Message.Text != StateManager.Keyboards.AddProductSkip)
+                        NewProductStates[chatId].ProductRecord.Name = update.Message.Text;
+
+                    NewProductStates[chatId].NewProductStep = NewProductSteps.Code;
+                    TelegramClient.SendTextMessageAsync(chatId, "کد:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                     break;
                 case NewProductSteps.Code:
                     if (update.Message.Text != StateManager.Keyboards.AddProductSkip)
-                        NewProductStates[subscriberRecord.ChatId].ProductRecord.Code = update.Message.Text;
+                        NewProductStates[chatId].ProductRecord.Code = update.Message.Text;
 
-                    NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Price;
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "قیمت:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+                    NewProductStates[chatId].NewProductStep = NewProductSteps.Price;
+                    TelegramClient.SendTextMessageAsync(chatId, "قیمت:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                     break;
                 case NewProductSteps.Price:
                     if (update.Message.Text != StateManager.Keyboards.AddProductSkip)
                     {
                         if (!int.TryParse(update.Message.Text, out var price))
                         {
-                            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "قیمت وارد شده صحیح نیست. یک مقدار عددی وارد کنید.", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+                            TelegramClient.SendTextMessageAsync(chatId, "قیمت وارد شده صحیح نیست. یک مقدار عددی وارد کنید.", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                             return;
                         }
 
-                        NewProductStates[subscriberRecord.ChatId].ProductRecord.Price = price;
+                        NewProductStates[chatId].ProductRecord.Price = price;
                     }
 
-                    NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Desciption;
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "توضیحات:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
+                    NewProductStates[chatId].NewProductStep = NewProductSteps.Desciption;
+                    TelegramClient.SendTextMessageAsync(chatId, "توضیحات:", replyMarkup: StateManager.Keyboards.AddingProductAdmin);
                     break;
                 case NewProductSteps.Desciption:
                     if (update.Message.Text != StateManager.Keyboards.AddProductSkip)
-                        NewProductStates[subscriberRecord.ChatId].ProductRecord.Description = update.Message.Text;
+                        NewProductStates[chatId].ProductRecord.Description = update.Message.Text;
 
-                    NewProductStates[subscriberRecord.ChatId].NewProductStep = NewProductSteps.Images;
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "تصاویر:", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
+                    NewProductStates[chatId].NewProductStep = NewProductSteps.Images;
+
+                    if (!NewProductStates[chatId].IsEdit)
+                        TelegramClient.SendTextMessageAsync(chatId, "تصاویر:", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
+                    else
+                    {
+                        TelegramClient.SendTextMessageAsync(chatId, "تصاویر موجود را حذف یا تصاویر جدید ارسال نمایید:", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
+
+                        foreach (var record in NewProductStates[chatId].ProductRecord.ImageFileRecords)
+                        {
+                            TelegramClient.SendPhotoAsync(
+                                chatId,
+                                record.ImageFileId,
+                                replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithCallbackData("حذف", "delete_image:" + record.Id))
+                            );
+                        }
+                    }
                     break;
                 case NewProductSteps.Images:
                     if (StateManager.Keyboards.AddProductSubmit == update.Message.Text)
                     {
-                        var hasImage = NewProductStates[subscriberRecord.ChatId].ProductRecord.ImageFileRecords.Any();
+                        var hasImage = NewProductStates[chatId].ProductRecord.ImageFileRecords.Any();
 
                         if (!hasImage)
                         {
-                            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "برای کارکرد بهتر بات حداقل یک تصویر ارسال نمایید", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
+                            TelegramClient.SendTextMessageAsync(chatId, "برای کارکرد بهتر بات حداقل یک تصویر ارسال نمایید", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
                             return;
                         }
 
                         using (var db = new Db())
                         {
-                            db.StoreProductRecords.Add(NewProductStates[subscriberRecord.ChatId].ProductRecord);
+                            if (NewProductStates[chatId].IsEdit)
+                            {
+                                var productId = NewProductStates[chatId].ProductRecord.Id;
+                                var productRecord = db.StoreProductRecords.Include(x => x.ImageFileRecords).Single(x => x.Id == productId);
+
+                                db.Entry(productRecord).CurrentValues.SetValues(NewProductStates[chatId].ProductRecord);
+
+                                foreach (var imageFileRecord in productRecord.ImageFileRecords.ToList())
+                                    db.ImageFileRecords.Remove(imageFileRecord);
+
+                                var imageFileRecords = NewProductStates[chatId].ProductRecord.ImageFileRecords.ToList();
+                                imageFileRecords.ForEach(record => { record.StoreProductRecordId = productId; });
+
+                                foreach (var imageFileRecord in imageFileRecords)
+                                    db.ImageFileRecords.Add(imageFileRecord);
+                            }
+                            else
+                                db.StoreProductRecords.Add(NewProductStates[chatId].ProductRecord);
+
                             db.SaveChanges();
                         }
 
-                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "محصول شما با موفقیت ثبت گردید", replyMarkup: StateManager.Keyboards.StartAdmin);
-                        NewProductStates.Remove(subscriberRecord.ChatId);
+                        TelegramClient.SendTextMessageAsync(chatId, "محصول شما با موفقیت ثبت گردید", replyMarkup: StateManager.Keyboards.StartAdmin);
+                        NewProductStates.Remove(chatId);
 
                         return;
                     }
 
                     if (update.Message.Type != MessageType.Photo)
                     {
-                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "لطفا تصویر ارسال نمایید", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
+                        TelegramClient.SendTextMessageAsync(chatId, "لطفا تصویر ارسال نمایید", replyMarkup: StateManager.Keyboards.AddingProductImagesAdmin);
                         return;
                     }
 
-                    NewProductStates[subscriberRecord.ChatId].ProductRecord.ImageFileRecords.Add(
+                    NewProductStates[chatId].ProductRecord.ImageFileRecords.Add(
                         new ImageFileRecord
                         {
-                            ImageFileId = update.Message.Photo.Last().FileId,
-                            StoreProductRecordId = Id
+                            ImageFileId = update.Message.Photo.Last().FileId
                         });
                     break;
                 default:
