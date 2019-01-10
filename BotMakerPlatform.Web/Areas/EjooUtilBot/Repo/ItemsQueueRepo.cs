@@ -6,34 +6,28 @@ using Telegram.Bot.Types;
 
 namespace BotMakerPlatform.Web.Areas.EjooUtilBot.Repo
 {
-    public class ImagesQueueRepo
+    public class ItemsQueueRepo
     {
-        private static readonly List<PhotoRecord> Images = new List<PhotoRecord>();
+        private static readonly List<ItemRecord> Images = new List<ItemRecord>();
 
         private int BotInstanceId { get; }
 
-        public ImagesQueueRepo(int botInstanceId)
+        public ItemsQueueRepo(int botInstanceId)
         {
             BotInstanceId = botInstanceId;
         }
 
-        public IEnumerable<PhotoRecord> GetAll()
+        public IEnumerable<ItemRecord> GetAll()
         {
             return Images.Where(x => x.BotInstanceId == BotInstanceId);
         }
 
-        public void Add(SubscriberRecord subscriberRecord, PhotoSize photoSize, int messageId)
+        public void Add(SubscriberRecord subscriberRecord, ItemRecord itemRecord)
         {
-            Images.Add(new PhotoRecord
-            {
-                BotInstanceId = BotInstanceId,
-                PhotoSize = photoSize,
-                MessageId =  messageId,
-                ChatId = subscriberRecord.ChatId,
-            });
+            Images.Add(itemRecord);
         }
 
-        public IEnumerable<PhotoRecord> GetCurrentSessionImages(SubscriberRecord subscriberRecord)
+        public IEnumerable<ItemRecord> GetCurrentSessionImages(SubscriberRecord subscriberRecord)
         {
             return GetAll().Where(x => x.ChatId == subscriberRecord.ChatId).OrderBy(x => x.MessageId);
         }

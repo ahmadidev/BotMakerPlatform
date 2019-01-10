@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using BotMakerPlatform.Web.Areas.EjooUtilBot.Record;
 using BotMakerPlatform.Web.Areas.EjooUtilBot.Repo;
+using BotMakerPlatform.Web.Controllers;
 using BotMakerPlatform.Web.Repo;
 using iText.IO.Image;
 using iText.Kernel.Geom;
@@ -18,10 +20,10 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
     public class Keyboards
     {
         public const string StartCommand = "/start";
-        public const string FlushCommand = "/flush";
+        public const string FlushCommand = "دریافت فایل ⬇️";
 
         public static IReplyMarkup StartReplyMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { StartCommand }, resizeKeyboard: true);
-        public static IReplyMarkup FlusMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { FlushCommand }, resizeKeyboard: true);
+        public static IReplyMarkup FlushMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { FlushCommand }, resizeKeyboard: true);
     }
 
     public class EjooUtilBotInstance : IBotInstance
@@ -29,14 +31,14 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         public int Id { get; set; }
         public string Username { get; set; }
 
-        private ImagesQueueRepo ImagesQueueRepo { get; }
+        private ItemsQueueRepo ItemsQueueRepo { get; }
         private ITelegramBotClient TelegramClient { get; }
 
         public EjooUtilBotInstance(
-            ImagesQueueRepo imagesQueueRepo,
+            ItemsQueueRepo itemsQueueRepo,
             ITelegramBotClient telegramClient)
         {
-            ImagesQueueRepo = imagesQueueRepo;
+            ItemsQueueRepo = itemsQueueRepo;
             TelegramClient = telegramClient;
         }
 
@@ -50,11 +52,11 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                 case MessageType.Text:
                     HandleTextMessage(update, subscriberRecord);
                     break;
+                case MessageType.Document:
                 case MessageType.Photo:
-                    AddImage(update, subscriberRecord);
+                    AddItem(update, subscriberRecord);
                     break;
                 default:
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"Message Type = {update.Message.Type.ToString()}");
                     break;
             }
         }
@@ -64,63 +66,151 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
             switch (update.Message.Text)
             {
                 case Keyboards.StartCommand:
-                    const string defaultWelcomeMessage = "1.Send Images\n2.Use /flush to get you nice pdf :)";
-                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, defaultWelcomeMessage, replyMarkup: Keyboards.FlusMarkup);
+                    const string defaultWelcomeMessage = "1.عکس ها را بفرستید\n2.دکمه را بزنید";
+                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, defaultWelcomeMessage,
+                        replyMarkup: Keyboards.FlushMarkup);
                     break;
                 case Keyboards.FlushCommand:
-                    Flush(update, subscriberRecord);
+                    try
+                    {
+                        Flush(update, subscriberRecord);
+                    }
+                    catch (Exception exception)
+                    {
+                        var baseException = exception.GetBaseException();
+                        HomeController.LogRecords.Add($"Error in Flush: {baseException.Message} -> {baseException.StackTrace}");
+                    }
+                    break;
+                default:
+                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"متوجه پیام نشدم.",
+                        replyMarkup: Keyboards.FlushMarkup);
                     break;
             }
         }
 
-        private void AddImage(Update update, SubscriberRecord subscriberRecord)
+        private void AddItem(Update update, SubscriberRecord subscriberRecord)
         {
-            ImagesQueueRepo.Add(subscriberRecord, update.Message.Photo[update.Message.Photo.Length - 1], update.Message.MessageId);
+            var item = new ItemRecord
+            {
+                BotInstanceId = Id,
+                MessageId = update.Message.MessageId,
+                ChatId = subscriberRecord.ChatId,
+            };
+
+            if (update.Message.Type == MessageType.Photo)
+            {
+                item.ItemType = ItemRecord.ItemTypes.IMAGE;
+                item.FileId = update.Message.Photo[update.Message.Photo.Length - 1].FileId;
+                ItemsQueueRepo.Add(subscriberRecord, item);
+            }
+            else if (update.Message.Type == MessageType.Text)
+            {
+                var isUri = Uri.IsWellFormedUriString(update.Message.Text, UriKind.RelativeOrAbsolute);
+                item.ItemType = ItemRecord.ItemTypes.WEB_PAGE;
+                item.Text = update.Message.Text;
+            }
+            else if (update.Message.Type == MessageType.Document)
+            {
+                switch (update.Message.Document.MimeType)
+                {
+                    case "application/pdf":
+                        item.ItemType = ItemRecord.ItemTypes.PDF_FILE;
+                        item.FileId = update.Message.Document.FileId;
+                        ItemsQueueRepo.Add(subscriberRecord, item);
+                        break;
+                    case "image/jpeg":
+                    case "image/png":
+                        item.ItemType = ItemRecord.ItemTypes.IMAGE;
+                        item.FileId = update.Message.Document.FileId;
+                        ItemsQueueRepo.Add(subscriberRecord, item);
+                        break;
+                }
+            }
         }
 
         private void Flush(Update update, SubscriberRecord subscriberRecord)
         {
-            var currentSessionImages = ImagesQueueRepo.GetCurrentSessionImages(subscriberRecord).ToArray();
+            var currentSessionImages = ItemsQueueRepo.GetCurrentSessionImages(subscriberRecord).ToArray();
 
             if (!currentSessionImages.Any())
             {
-                TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "Please send some images first.");
+                TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, "چیزی برای تبدیل به پی دی اف وجود ندارد.",
+                    replyMarkup: Keyboards.FlushMarkup);
                 return;
             }
 
-            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"Processing { currentSessionImages.Length } Images...");
+            TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"در حال بارگزاری { currentSessionImages.Length } فایل",
+                replyMarkup: Keyboards.FlushMarkup);
             var progreessMsgId = TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, GetProgressString(0, 10)).Result.MessageId;
-
-            var inImageStream = new MemoryStream();
-            var file = TelegramClient.GetInfoAndDownloadFileAsync(currentSessionImages[0].PhotoSize.FileId, inImageStream).Result;
-            var standardImage = new Image(ImageDataFactory.Create(inImageStream.ToArray()));
-            inImageStream.Close();
 
             var memStream = new MemoryStream();
             using (var pdfWriter = new PdfWriter(memStream))
             using (var pdfDoc = new PdfDocument(pdfWriter))
-            using (var document = new iText.Layout.Document(pdfDoc, new PageSize(standardImage.GetImageWidth(), standardImage.GetImageHeight())))
+            using (var document = new iText.Layout.Document(pdfDoc, new PageSize(0, 0)))
             {
                 for (var i = 0; i < currentSessionImages.Length; i++)
                 {
                     var currentSessionImage = currentSessionImages[i];
-                    var imageStream = new MemoryStream();
-                    var result = TelegramClient.GetInfoAndDownloadFileAsync(currentSessionImage.PhotoSize.FileId, imageStream).Result;
 
-                    var image = new Image(ImageDataFactory.Create(imageStream.ToArray()));
-                    pdfDoc.AddNewPage(new PageSize(image.GetImageWidth(), image.GetImageHeight()));
-                    image.SetFixedPosition(i + 1, 0, 0);
-                    document.Add(image);
+                    switch (currentSessionImage.ItemType)
+                    {
+                        case ItemRecord.ItemTypes.IMAGE:
+                            {
+                                var imageStream = new MemoryStream();
+                                var result = TelegramClient
+                                    .GetInfoAndDownloadFileAsync(currentSessionImage.FileId, imageStream).Result;
+
+                                var image = new Image(ImageDataFactory.Create(imageStream.ToArray()));
+                                pdfDoc.AddNewPage(new PageSize(image.GetImageWidth(), image.GetImageHeight()));
+                                image.SetFixedPosition(pdfDoc.GetNumberOfPages(), 0, 0);
+                                document.Add(image);
+                            }
+                            break;
+
+                        case ItemRecord.ItemTypes.PDF_FILE:
+                            {
+                                try
+                                {
+                                    var memoryStream = new MemoryStream();
+                                    var result = TelegramClient.GetInfoAndDownloadFileAsync(currentSessionImage.FileId, memoryStream).Result;
+
+                                    var bytes = memoryStream.ToArray();
+                                    var tempStream = new MemoryStream(bytes);
+
+                                    using (var pdfReader = new PdfReader(tempStream))
+                                    {
+                                        using (var newPdfDoc = new PdfDocument(pdfReader))
+                                        {
+                                            newPdfDoc.CopyPagesTo(1,
+                                                newPdfDoc.GetNumberOfPages(),
+                                                pdfDoc);
+                                        }
+                                    }
+
+                                    tempStream.Close();
+                                    memoryStream.Close();
+                                }
+                                catch (Exception exception)
+                                {
+                                    var baseException = exception.GetBaseException();
+                                    HomeController.LogRecords.Add($"Read Pdf File Failed: {baseException.Message} -> {baseException.StackTrace}");
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
                     TelegramClient.EditMessageTextAsync(subscriberRecord.ChatId, progreessMsgId,
                         GetProgressString(i + 1, currentSessionImages.Length));
                 }
             }
 
 
-            TelegramClient.EditMessageTextAsync(subscriberRecord.ChatId, progreessMsgId, "Uploading File...");
+            var resultEdit = TelegramClient.EditMessageTextAsync(subscriberRecord.ChatId, progreessMsgId, "در حال آپلود فایل...").Result;
             SendPdf(subscriberRecord, memStream);
             memStream.Close();
-            ImagesQueueRepo.ClearCurrentSessionImages(subscriberRecord);
+            ItemsQueueRepo.ClearCurrentSessionImages(subscriberRecord);
         }
 
         private static string GetProgressString(int i, int n)
