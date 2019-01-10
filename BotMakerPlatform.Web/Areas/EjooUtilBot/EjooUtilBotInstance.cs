@@ -21,6 +21,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
     {
         public const string StartCommand = "/start";
         public const string FlushCommand = "دریافت فایل ⬇️";
+        public const string BroadcastCommand = "/broadcast";
 
         public static IReplyMarkup StartReplyMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { StartCommand }, resizeKeyboard: true);
         public static IReplyMarkup FlushMarkup => new ReplyKeyboardMarkup(new KeyboardButton[] { FlushCommand }, resizeKeyboard: true);
@@ -32,13 +33,18 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         public string Username { get; set; }
 
         private ItemsQueueRepo ItemsQueueRepo { get; }
+        private SubscriberRepo SubscriberRepo { get; }
         private ITelegramBotClient TelegramClient { get; }
+
+        private static long _broadcastingSubscriberChatId;
 
         public EjooUtilBotInstance(
             ItemsQueueRepo itemsQueueRepo,
+            SubscriberRepo subscriberRepo,
             ITelegramBotClient telegramClient)
         {
             ItemsQueueRepo = itemsQueueRepo;
+            SubscriberRepo = subscriberRepo;
             TelegramClient = telegramClient;
         }
 
@@ -46,6 +52,14 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         {
             if (update.Type != UpdateType.Message)
                 return;
+
+            if (IsAdmin(subscriberRecord) && subscriberRecord.ChatId == _broadcastingSubscriberChatId)
+            {
+                foreach (var record in SubscriberRepo.GetAll())
+                    SendMeesage(update, subscriberRecord, record.ChatId);
+
+                _broadcastingSubscriberChatId = 0;
+            }
 
             switch (update.Message.Type)
             {
@@ -56,15 +70,27 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                 case MessageType.Photo:
                     AddItem(update, subscriberRecord);
                     break;
-                default:
-                    break;
             }
+        }
+
+        private static bool IsAdmin(SubscriberRecord subscriberRecord)
+        {
+            return subscriberRecord.Username == "ahmadierfan" || subscriberRecord.Username == "ahmadidev";
         }
 
         private void HandleTextMessage(Update update, SubscriberRecord subscriberRecord)
         {
             switch (update.Message.Text)
             {
+                case Keyboards.BroadcastCommand:
+                    if (IsAdmin(subscriberRecord))
+                    {
+                        TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId,
+                            "پیام مورد نظر را برای انتشار ارسال کنید.",
+                            replyMarkup: Keyboards.FlushMarkup, disableNotification: true);
+                        _broadcastingSubscriberChatId = subscriberRecord.ChatId;
+                    }
+                    break;
                 case Keyboards.StartCommand:
                     const string defaultWelcomeMessage = "1.عکس ها را بفرستید\n2.دکمه را بزنید";
                     TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, defaultWelcomeMessage,
@@ -84,6 +110,76 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                 default:
                     TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId, $"متوجه پیام نشدم.",
                         replyMarkup: Keyboards.FlushMarkup);
+                    break;
+            }
+        }
+
+        private void SendMeesage(Update update, SubscriberRecord subscriberRecord, long chatId)
+        {
+            string fileId;
+            switch (update.Message.Type)
+            {
+                case MessageType.Text:
+                    if (update.Message.Text != null)
+                        TelegramClient.SendTextMessageAsync(chatId, update.Message.Text, disableNotification: true);
+                    break;
+                case MessageType.Photo:
+                    fileId = update.Message.Photo.Last().FileId;
+                    TelegramClient.SendPhotoAsync(chatId, new InputOnlineFile(fileId), update.Message.Caption ?? "", disableNotification: true);
+                    break;
+                case MessageType.Audio:
+                    fileId = update.Message.Audio.FileId;
+                    TelegramClient.SendAudioAsync(chatId, new InputOnlineFile(fileId), update.Message.Caption ?? "",
+                        ParseMode.Default,
+                        update.Message.Audio.Duration, update.Message.Audio.Performer ?? "", update.Message.Audio.Title ?? "", disableNotification: true);
+                    break;
+                case MessageType.Video:
+                    fileId = update.Message.Video.FileId;
+                    TelegramClient.SendVideoAsync(chatId, new InputOnlineFile(fileId),
+                        caption: update.Message.Caption ?? "", disableNotification: true);
+                    break;
+                case MessageType.Voice:
+                    fileId = update.Message.Voice.FileId;
+                    TelegramClient.SendVoiceAsync(chatId, new InputOnlineFile(fileId), update.Message.Caption ?? "", disableNotification: true);
+                    break;
+                case MessageType.Document:
+                    fileId = update.Message.Document.FileId;
+                    TelegramClient.SendDocumentAsync(chatId, new InputOnlineFile(fileId), update.Message.Caption ?? "", disableNotification: true);
+                    break;
+                case MessageType.Sticker:
+                    fileId = update.Message.Sticker.FileId;
+                    TelegramClient.SendStickerAsync(chatId, new InputOnlineFile(fileId), disableNotification: true);
+                    break;
+                case MessageType.Location:
+                    TelegramClient.SendLocationAsync(chatId, update.Message.Location.Latitude,
+                        update.Message.Location.Longitude, disableNotification: true);
+                    break;
+                case MessageType.VideoNote:
+                    fileId = update.Message.VideoNote.FileId;
+                    TelegramClient.SendVideoNoteAsync(chatId, new InputOnlineFile(fileId),
+                        update.Message.VideoNote.Duration, update.Message.VideoNote.Length, disableNotification: true);
+                    break;
+                case MessageType.Contact:
+                case MessageType.Venue:
+                case MessageType.Game:
+                case MessageType.Invoice:
+                case MessageType.SuccessfulPayment:
+                case MessageType.Unknown:
+                case MessageType.WebsiteConnected:
+                case MessageType.ChatMembersAdded:
+                case MessageType.ChatMemberLeft:
+                case MessageType.ChatTitleChanged:
+                case MessageType.ChatPhotoChanged:
+                case MessageType.MessagePinned:
+                case MessageType.ChatPhotoDeleted:
+                case MessageType.GroupCreated:
+                case MessageType.SupergroupCreated:
+                case MessageType.ChannelCreated:
+                case MessageType.MigratedToSupergroup:
+                case MessageType.MigratedFromGroup:
+                default:
+                    TelegramClient.SendTextMessageAsync(subscriberRecord.ChatId,
+                        $"Message type {update.Message.Type} is not supported.");
                     break;
             }
         }

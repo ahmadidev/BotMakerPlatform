@@ -27,9 +27,6 @@ namespace BotMakerPlatform.Web.Controllers
             Request.InputStream.Position = 0;
             var input = new StreamReader(Request.InputStream).ReadToEnd();
             update = JsonConvert.DeserializeObject<Update>(input);
-            //HomeController.LogRecords.Add(input);
-            //HomeController.LogRecords.Add(update.Message.From.FirstName);
-            //HomeController.LogRecords.Add(update.Message.Chat.FirstName);
 
             var webhookUpdateDto = new WebhookUpdateDto { Update = update, BotInstanceId = botInstanceId, Secret = secret };
             HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {update.Type} MessageType: {update.Message?.Type}.");
@@ -98,7 +95,6 @@ namespace BotMakerPlatform.Web.Controllers
         {
             var message = update.Message;
 
-            //TODO: First and Last are not provided
             SubscriberRepo.Add(message.Chat.Id,
                                message.Chat.Username,
                                message.From.FirstName,

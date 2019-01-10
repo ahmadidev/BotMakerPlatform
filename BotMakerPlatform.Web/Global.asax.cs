@@ -29,7 +29,7 @@ namespace BotMakerPlatform.Web
         protected void Application_Error(object sender, EventArgs e)
         {
             var ex = Server.GetLastError().GetBaseException();
-            HomeController.LogRecords.Add($"Error ({ex.GetType().Name}): {ex.Message} - {ex.StackTrace}");
+            HomeController.LogRecords.Add($"Error ({ex.GetType().Name}): {Request.RawUrl} - {ex.Message} - {ex.StackTrace}");
         }
 
         protected void Session_End(object sender, EventArgs e)
