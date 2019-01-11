@@ -21,19 +21,12 @@ namespace BotMakerPlatform.Web.Repo
 
         public SubscriberRecord GetByChatId(long chatId)
         {
-            return GetAll().SingleOrDefault(x => x.ChatId == chatId);
+            return GetAll().SingleOrDefault(x => x.BotInstanceRecordId == BotInstanceId && x.ChatId == chatId);
         }
 
-        public void Add(long chatId, string username, string firstName, string lastName)
+        public void Add(SubscriberRecord subscriber)
         {
-            Db.Subscribers.Add(new SubscriberRecord
-            {
-                ChatId = chatId,
-                BotInstanceRecordId = BotInstanceId,
-                Username = username,
-                FirstName = firstName,
-                LastName = lastName
-            });
+            Db.Subscribers.Add(subscriber);
             Db.SaveChanges();
         }
     }

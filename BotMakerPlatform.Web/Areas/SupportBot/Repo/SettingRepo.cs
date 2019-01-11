@@ -10,6 +10,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Repo
         private static readonly List<SettingRecord> SettingRecords = new List<SettingRecord>();
 
         private int BotInstanceId { get; }
+
         public SettingRepo(int botInstanceId)
         {
             BotInstanceId = botInstanceId;

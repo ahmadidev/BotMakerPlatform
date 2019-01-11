@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
-using BotMakerPlatform.Web.Areas.StoreBot;
 using BotMakerPlatform.Web.Areas.StoreBot.Record;
+using BotMakerPlatform.Web.Areas.StoreBot.Repo;
 
 namespace BotMakerPlatform.Web.Repo
 {

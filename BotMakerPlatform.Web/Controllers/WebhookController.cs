@@ -40,25 +40,49 @@ namespace BotMakerPlatform.Web.Controllers
 
             using (var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag))
             {
-                var typeName = typeof(SupportBotInstance).FullName.Replace("SupportBot", botInstanceRecord.BotUniqueName);
-
-                var botInstance = (IBotInstance)scope.Resolve(Type.GetType(typeName));
-                botInstance.BotInstanceId = botInstanceRecord.Id;
-                botInstance.Username = botInstanceRecord.BotUsername;
+                var botInstance = GetBotInstance(botInstanceRecord, scope);
+                var subscriber = GetOrAddSubscriber(webhookUpdateDto, scope);
 
                 Dump(botInstance, webhookUpdateDto.Update);
-
-                SubscriberRepo = scope.Resolve<SubscriberRepo>();
-
-                SubscriberRecord subscriber = null;
-
-                if (webhookUpdateDto.Update.Type == UpdateType.Message)
-                    subscriber = GetSubscriber(webhookUpdateDto.Update.Message.Chat.Id) ?? AddSubscriber(webhookUpdateDto.Update);
 
                 botInstance.Update(webhookUpdateDto.Update, subscriber);
             }
 
             return Content("");
+        }
+
+        private SubscriberRecord GetOrAddSubscriber(WebhookUpdateDto webhookUpdateDto, ILifetimeScope scope)
+        {
+            SubscriberRepo = scope.Resolve<SubscriberRepo>();
+
+            var message = webhookUpdateDto.Update.Message;
+            var subscriber = SubscriberRepo.GetByChatId(message.Chat.Id);
+
+            if (subscriber != null)
+                return subscriber;
+
+            subscriber = new SubscriberRecord
+            {
+                ChatId = message.Chat.Id,
+                BotInstanceRecordId = webhookUpdateDto.BotInstanceId,
+                Username = message.Chat.Username,
+                FirstName = message.From.FirstName,
+                LastName = message.From.LastName
+            };
+
+            SubscriberRepo.Add(subscriber);
+
+            return subscriber;
+        }
+
+        private static IBotInstance GetBotInstance(BotInstanceRecord botInstanceRecord, ILifetimeScope scope)
+        {
+            var typeName = typeof(SupportBotInstance).FullName.Replace("SupportBot", botInstanceRecord.BotUniqueName);
+
+            var botInstance = (IBotInstance)scope.Resolve(Type.GetType(typeName));
+            botInstance.BotInstanceId = botInstanceRecord.Id;
+            botInstance.Username = botInstanceRecord.BotUsername;
+            return botInstance;
         }
 
         private static void Dump(IBotInstance botInstance, Update update)
@@ -81,23 +105,6 @@ namespace BotMakerPlatform.Web.Controllers
             {
                 Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, $"{messageHeader}\nUpdate received ({update.Type}): {JsonConvert.SerializeObject(update)}", disableWebPagePreview: true);
             }
-        }
-
-        private SubscriberRecord GetSubscriber(long chatId)
-        {
-            return SubscriberRepo.GetByChatId(chatId);
-        }
-
-        private SubscriberRecord AddSubscriber(Update update)
-        {
-            var message = update.Message;
-
-            SubscriberRepo.Add(message.Chat.Id,
-                               message.Chat.Username,
-                               message.From.FirstName,
-                               message.From.LastName);
-
-            return GetSubscriber(message.Chat.Id);
         }
     }
 }

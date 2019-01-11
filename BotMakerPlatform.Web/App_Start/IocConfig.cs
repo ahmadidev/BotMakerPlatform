@@ -78,6 +78,12 @@ namespace BotMakerPlatform.Web
                 .InstancePerRequest()
                 .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
 
+            builder
+                .RegisterType<Db>()
+                .AsSelf()
+                .InstancePerRequest()
+                .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
+
             Container = builder.Build();
 
             GlobalConfiguration.Configuration.UseAutofacActivator(Container);

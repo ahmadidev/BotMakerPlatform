@@ -1,6 +1,6 @@
 ﻿using BotMakerPlatform.Web.Repo;
 
-namespace BotMakerPlatform.Web.Areas.StoreBot
+namespace BotMakerPlatform.Web.Areas.StoreBot.Repo
 {
     public class StoreAdminRecord
     {

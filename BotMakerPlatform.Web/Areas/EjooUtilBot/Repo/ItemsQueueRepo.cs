@@ -2,7 +2,6 @@
 using System.Linq;
 using BotMakerPlatform.Web.Areas.EjooUtilBot.Record;
 using BotMakerPlatform.Web.Repo;
-using Telegram.Bot.Types;
 
 namespace BotMakerPlatform.Web.Areas.EjooUtilBot.Repo
 {

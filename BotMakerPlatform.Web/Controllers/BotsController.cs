@@ -14,16 +14,18 @@ namespace BotMakerPlatform.Web.Controllers
     public class BotsController : Controller
     {
         private Db Db { get; }
+        private BotDefinitionRepo BotDefinitionRepo { get; }
 
-        public BotsController(Db db)
+        public BotsController(Db db, BotDefinitionRepo botDefinitionRepo)
         {
             Db = db;
+            BotDefinitionRepo = botDefinitionRepo;
         }
 
         [HttpGet]
         public ActionResult Index(string uniqueName)
         {
-            var bot = BotDefinitionRepo.BotDefinitions.Single(x => x.UniqueName == uniqueName);
+            var bot = BotDefinitionRepo.GetByUniqueName(uniqueName);
             var userId = User.Identity.GetUserId();
             var botInstance = Db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == uniqueName && x.UserId == userId);
 

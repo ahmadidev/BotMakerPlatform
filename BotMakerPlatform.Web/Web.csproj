@@ -249,7 +249,7 @@
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="Views\Home\Home.cshtml" />
+    <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Account\Login.cshtml" />
   </ItemGroup>
   <ItemGroup>
@@ -270,7 +270,7 @@
     <Compile Include="ISettingable.cs" />
     <Compile Include="Areas\StoreBot\Models\Setting.cs" />
     <Compile Include="Areas\StoreBot\Record\StoreProductRecord.cs" />
-    <Compile Include="Areas\StoreBot\StoreAdminRecord.cs" />
+    <Compile Include="Areas\StoreBot\Repo\StoreAdminRecord.cs" />
     <Compile Include="Areas\StoreBot\StoreBotDefinition.cs" />
     <Compile Include="Areas\StoreBot\StoreBotAreaRegistration.cs" />
     <Compile Include="Areas\StoreBot\StoreBotInstance.cs" />

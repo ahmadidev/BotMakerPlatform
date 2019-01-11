@@ -23,16 +23,6 @@ namespace BotMakerPlatform.Web.Controllers
             return new ChallengeResult("Google", Url.Action("Index", "Home"));//Url.Action("ExternalLoginCallback", "Account"));
         }
 
-        //[Route("ExternalLoginCallback")]
-        //[HttpGet]
-        //public ActionResult ExternalLoginCallback()
-        //{
-        //    var auth = Authentication.AuthenticateAsync(DefaultAuthenticationTypes.ApplicationCookie).Result;
-        //    var email = auth.Identity.FindFirst(x => x.Type == ClaimTypes.Email).Value;
-
-        //    return Redirect("/");
-        //}
-
         [HttpGet]
         public ActionResult Logout()
         {

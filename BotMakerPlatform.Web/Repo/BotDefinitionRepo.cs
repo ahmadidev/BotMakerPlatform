@@ -6,7 +6,7 @@ namespace BotMakerPlatform.Web.Repo
 {
     public class BotDefinitionRepo
     {
-        public static IEnumerable<IBotDefinition> BotDefinitions;
+        private static readonly IEnumerable<IBotDefinition> BotDefinitions;
 
         static BotDefinitionRepo()
         {
@@ -20,6 +20,16 @@ namespace BotMakerPlatform.Web.Repo
 
                 BotDefinitions = botDefinitions;
             }
+        }
+
+        public IBotDefinition GetByUniqueName(string uniqueName)
+        {
+            return BotDefinitions.SingleOrDefault(x => x.UniqueName == uniqueName);
+        }
+
+        public IEnumerable<IBotDefinition> GetAll()
+        {
+            return BotDefinitions;
         }
     }
 }
