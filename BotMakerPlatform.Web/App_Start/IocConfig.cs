@@ -42,6 +42,11 @@ namespace BotMakerPlatform.Web
 
             builder
                 .RegisterAssemblyTypes(currentAssembly)
+                .AssignableTo<IBotDefinition>()
+                .SingleInstance();
+
+            builder
+                .RegisterAssemblyTypes(currentAssembly)
                 .AssignableTo<IBotInstance>()
                 .InstancePerRequest()
                 .InstancePerBackgroundJob(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);

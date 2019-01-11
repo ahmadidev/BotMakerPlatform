@@ -18,6 +18,12 @@ namespace BotMakerPlatform.Web.Controllers
     public class WebhookController : Controller
     {
         private SubscriberRepo SubscriberRepo { get; set; }
+        private Db Db { get; }
+
+        public WebhookController(Db db)
+        {
+            Db = db;
+        }
 
         // Webhook/Update/?BotInstanceId=[int]&Secret=somesecretrandom
         [HttpPost]
@@ -31,9 +37,7 @@ namespace BotMakerPlatform.Web.Controllers
             var webhookUpdateDto = new WebhookUpdateDto { Update = update, BotInstanceId = botInstanceId, Secret = secret };
             HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {update.Type} MessageType: {update.Message?.Type}.");
 
-            BotInstanceRecord botInstanceRecord;
-            using (var db = new Db())
-                botInstanceRecord = db.BotInstanceRecords.SingleOrDefault(x => x.Id == botInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
+            var botInstanceRecord = Db.BotInstanceRecords.SingleOrDefault(x => x.Id == botInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
 
             if (botInstanceRecord == null)
                 throw new HttpException((int)HttpStatusCode.BadRequest, "BotUniqueName or Secret is invalid.");
@@ -46,7 +50,7 @@ namespace BotMakerPlatform.Web.Controllers
                 var typeName = typeof(SupportBotInstance).FullName.Replace("SupportBot", botInstanceRecord.BotUniqueName);
 
                 var botInstance = (IBotInstance)scope.Resolve(Type.GetType(typeName));
-                botInstance.Id = botInstanceRecord.Id;
+                botInstance.BotInstanceId = botInstanceRecord.Id;
                 botInstance.Username = botInstanceRecord.BotUsername;
 
                 Dump(botInstance, update);
@@ -82,7 +86,7 @@ namespace BotMakerPlatform.Web.Controllers
             }
             else
             {
-                Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, $"{messageHeader}\nUpdate received ({update.Type}): {JsonConvert.SerializeObject(update)}");
+                Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, $"{messageHeader}\nUpdate received ({update.Type}): {JsonConvert.SerializeObject(update)}", disableWebPagePreview: true);
             }
         }
 

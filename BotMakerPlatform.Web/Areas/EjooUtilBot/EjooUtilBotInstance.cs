@@ -29,7 +29,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
 
     public class EjooUtilBotInstance : IBotInstance
     {
-        public int Id { get; set; }
+        public int BotInstanceId { get; set; }
         public string Username { get; set; }
 
         private ItemsQueueRepo ItemsQueueRepo { get; }
@@ -188,7 +188,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         {
             var item = new ItemRecord
             {
-                BotInstanceId = Id,
+                BotInstanceId = BotInstanceId,
                 MessageId = update.Message.MessageId,
                 ChatId = subscriberRecord.ChatId,
             };

@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Autofac;
 
 namespace BotMakerPlatform.Web.Repo
 {
@@ -10,12 +10,16 @@ namespace BotMakerPlatform.Web.Repo
 
         static BotDefinitionRepo()
         {
-            var bots = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(s => s.GetTypes())
-                .Where(x => typeof(IBotDefinition).IsAssignableFrom(x) && !x.IsInterface)
-                .Select(x => (IBotDefinition)Activator.CreateInstance(x));
+            using (var scope = IocConfig.Container.BeginLifetimeScope())
+            {
+                var botDefinitions = IocConfig.Container.ComponentRegistry
+                    .Registrations
+                    .Where(x => x.Activator.LimitType.IsAssignableTo<IBotDefinition>())
+                    .Select(x => (IBotDefinition)scope.Resolve(x.Activator.LimitType))
+                    .ToList();
 
-            BotDefinitions = bots;
+                BotDefinitions = botDefinitions;
+            }
         }
     }
 }

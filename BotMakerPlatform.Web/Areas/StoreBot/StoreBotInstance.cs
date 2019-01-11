@@ -36,7 +36,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
     public class StoreBotInstance : IBotInstance
     {
-        public int Id { get; set; }
+        public int BotInstanceId { get; set; }
         public string Username { get; set; }
 
         private ITelegramBotClient TelegramClient { get; }
@@ -105,14 +105,14 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                         NewProductStates.Add(subscriberRecord.ChatId, null);
 
                     NewProductStates[subscriberRecord.ChatId] = new NewProductInState();
-                    NewProductStates[subscriberRecord.ChatId].ProductRecord.BotInstanceRecordId = Id;
+                    NewProductStates[subscriberRecord.ChatId].ProductRecord.BotInstanceRecordId = BotInstanceId;
 
                     HandleNewProductMessage(update, subscriberRecord);
                     break;
                 case StateManager.Keyboards.ListProductsCommand:
                     using (var db = new Db())
                     {
-                        var products = db.StoreProductRecords.Include(x => x.ImageFileRecords).AsNoTracking().Where(x => x.BotInstanceRecordId == Id);
+                        var products = db.StoreProductRecords.Include(x => x.ImageFileRecords).AsNoTracking().Where(x => x.BotInstanceRecordId == BotInstanceId);
 
                         if (!products.Any())
                         {
@@ -399,7 +399,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                         {
                             using (var db = new Db())
                             {
-                                var duplicateCodeProduct = db.StoreProductRecords.SingleOrDefault(x => x.BotInstanceRecordId == Id && x.Code == update.Message.Text);
+                                var duplicateCodeProduct = db.StoreProductRecords.SingleOrDefault(x => x.BotInstanceRecordId == BotInstanceId && x.Code == update.Message.Text);
 
                                 if (duplicateCodeProduct != null)
                                 {
