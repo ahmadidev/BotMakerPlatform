@@ -316,6 +316,7 @@
     <Compile Include="Repo\SubscriberRecord.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="UpdateModelBinder.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\web.config" />

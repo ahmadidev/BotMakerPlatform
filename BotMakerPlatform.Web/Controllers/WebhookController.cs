@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Web;
@@ -27,17 +26,11 @@ namespace BotMakerPlatform.Web.Controllers
 
         // Webhook/Update/?BotInstanceId=[int]&Secret=somesecretrandom
         [HttpPost]
-        public ActionResult Update(Update update, int botInstanceId, string secret)//(WebhookUpdateDto webhookUpdateDto) ToDo: make binder bind Update from body
+        public ActionResult Update([ModelBinder(typeof(UpdateModelBinder))]WebhookUpdateDto webhookUpdateDto)
         {
-            //TODO: Find out the reason of not mapping firstname and lastname of update
-            Request.InputStream.Position = 0;
-            var input = new StreamReader(Request.InputStream).ReadToEnd();
-            update = JsonConvert.DeserializeObject<Update>(input);
+            HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {webhookUpdateDto.Update.Type} MessageType: {webhookUpdateDto.Update.Message?.Type}.");
 
-            var webhookUpdateDto = new WebhookUpdateDto { Update = update, BotInstanceId = botInstanceId, Secret = secret };
-            HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {update.Type} MessageType: {update.Message?.Type}.");
-
-            var botInstanceRecord = Db.BotInstanceRecords.SingleOrDefault(x => x.Id == botInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
+            var botInstanceRecord = Db.BotInstanceRecords.SingleOrDefault(x => x.Id == webhookUpdateDto.BotInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
 
             if (botInstanceRecord == null)
                 throw new HttpException((int)HttpStatusCode.BadRequest, "BotUniqueName or Secret is invalid.");
@@ -53,13 +46,13 @@ namespace BotMakerPlatform.Web.Controllers
                 botInstance.BotInstanceId = botInstanceRecord.Id;
                 botInstance.Username = botInstanceRecord.BotUsername;
 
-                Dump(botInstance, update);
+                Dump(botInstance, webhookUpdateDto.Update);
 
                 SubscriberRepo = scope.Resolve<SubscriberRepo>();
 
                 SubscriberRecord subscriber = null;
 
-                if (update.Type == UpdateType.Message)
+                if (webhookUpdateDto.Update.Type == UpdateType.Message)
                     subscriber = GetSubscriber(webhookUpdateDto.Update.Message.Chat.Id) ?? AddSubscriber(webhookUpdateDto.Update);
 
                 botInstance.Update(webhookUpdateDto.Update, subscriber);
