@@ -7,12 +7,13 @@ using Owin;
 using System.Web.Mvc;
 using System.Web.Routing;
 using Microsoft.Owin.Security;
+using Serilog;
 
 [assembly: OwinStartup(typeof(Startup))]
 
 namespace BotMakerPlatform.Web
 {
-    public class Startup
+    public partial class Startup
     {
         public void Configuration(IAppBuilder app)
         {
@@ -20,6 +21,7 @@ namespace BotMakerPlatform.Web
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             IocConfig.Config();
             //SchedulerConfig.Config(app);
+            LoggerConfig.Config();
 
             app.UseCookieAuthentication(new CookieAuthenticationOptions
             {
@@ -33,6 +35,8 @@ namespace BotMakerPlatform.Web
             });
 
             app.SetDefaultSignInAsAuthenticationType(DefaultAuthenticationTypes.ApplicationCookie);
+
+            Log.Information("App started successfully.");
         }
     }
 }

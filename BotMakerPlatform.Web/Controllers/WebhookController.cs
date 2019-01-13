@@ -9,6 +9,7 @@ using BotMakerPlatform.Web.Areas.SupportBot;
 using BotMakerPlatform.Web.CriticalDtos;
 using BotMakerPlatform.Web.Repo;
 using Newtonsoft.Json;
+using Serilog;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
@@ -28,7 +29,8 @@ namespace BotMakerPlatform.Web.Controllers
         [HttpPost]
         public ActionResult Update([ModelBinder(typeof(UpdateModelBinder))]WebhookUpdateDto webhookUpdateDto)
         {
-            HomeController.LogRecords.Add($"Telegram hit webhook BotInstanceId: {webhookUpdateDto.BotInstanceId} Secret: {webhookUpdateDto.Secret} UpdateType: {webhookUpdateDto.Update.Type} MessageType: {webhookUpdateDto.Update.Message?.Type}.");
+            Log.Information("Telegram hit webhook BotInstanceId: {BotInstanceId} Secret: {Secret} UpdateType: {UpdateType} MessageType: {MessageType}.",
+                webhookUpdateDto.BotInstanceId, webhookUpdateDto.Secret, webhookUpdateDto.Update.Type, webhookUpdateDto.Update.Message?.Type);
 
             var botInstanceRecord = Db.BotInstanceRecords.SingleOrDefault(x => x.Id == webhookUpdateDto.BotInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
 

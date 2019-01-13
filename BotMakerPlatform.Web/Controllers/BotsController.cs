@@ -7,6 +7,7 @@ using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.CriticalDtos;
 using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNet.Identity;
+using Serilog;
 using Telegram.Bot;
 
 namespace BotMakerPlatform.Web.Controllers
@@ -58,7 +59,7 @@ namespace BotMakerPlatform.Web.Controllers
                 WebhookSecret = Guid.NewGuid().ToString("N")
             };
 
-            HomeController.LogRecords.Add($"Adding Webhook for bot {uniqueName} ({botInstance.Id})");
+            Log.Information("Adding Webhook for bot {BotUniqueName} ({BotInstanceId})", botInstance.BotUniqueName, botInstance.Id);
 
             var webhookUrl = $"{Request.Url.Scheme}://{Request.Url.Authority.TrimEnd('/')}/{Request.ApplicationPath?.Trim('/')}/Webhook/Update/?{nameof(WebhookUpdateDto.BotInstanceId)}={botInstance.Id}&{nameof(WebhookUpdateDto.Secret)}={botInstance.WebhookSecret}";
             telegramClient.SetWebhookAsync(webhookUrl).Wait();

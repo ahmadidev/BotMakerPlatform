@@ -8,6 +8,7 @@ using BotMakerPlatform.Web.Areas.StoreBot.Record;
 using BotMakerPlatform.Web.Areas.StoreBot.Repo;
 using BotMakerPlatform.Web.Controllers;
 using BotMakerPlatform.Web.Repo;
+using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -155,7 +156,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                                 })
                                 .ContinueWith(task =>
                                 {
-                                    HomeController.LogRecords.Add("Delayed Message Exception: " + task.Exception?.GetBaseException().Message);
+                                    Log.Error("Delayed Message Exception: {Message}", task.Exception?.GetBaseException().Message);
                                 }, TaskContinuationOptions.OnlyOnFaulted);
                         }
                     }

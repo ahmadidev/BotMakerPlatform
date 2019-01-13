@@ -9,6 +9,7 @@ using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Layout.Element;
+using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -104,7 +105,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                     catch (Exception exception)
                     {
                         var baseException = exception.GetBaseException();
-                        HomeController.LogRecords.Add($"Error in Flush: {baseException.Message} -> {baseException.StackTrace}");
+                        Log.Error(baseException, "Error in Flush: {Message} -> {StackTrace}", baseException.Message, baseException.StackTrace);
                     }
                     break;
                 default:
@@ -289,7 +290,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                                 catch (Exception exception)
                                 {
                                     var baseException = exception.GetBaseException();
-                                    HomeController.LogRecords.Add($"Read Pdf File Failed: {baseException.Message} -> {baseException.StackTrace}");
+                                    Log.Error(baseException, "Read Pdf File Failed: {Message} -> {StackTrace}", baseException.Message, baseException.StackTrace);
                                 }
                             }
                             break;
