@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using Serilog;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 
 namespace BotMakerPlatform.Web.Controllers
 {
@@ -101,7 +102,92 @@ namespace BotMakerPlatform.Web.Controllers
                 if (update.Message.From.Username.HasText())
                     messageHeader += $"(@{update.Message.From.Username})";
 
-                Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, $"{messageHeader}\n{update.Message.Type}");
+                messageHeader += $"\n{update.Message.Type}";
+
+                if (update.Message.Caption.HasText())
+                {
+                    messageHeader += $"\n{update.Message.Caption}";
+                }
+
+                if (update.Message.Text.HasText())
+                {
+                    messageHeader += $"\n{update.Message.Text}";
+                }
+
+                //TODO: remove  when phot fixed
+                Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, messageHeader, disableNotification: true);
+
+                string fileId;
+                switch (update.Message.Type)
+                {
+                    case MessageType.Text:
+                        if (update.Message.Text != null)
+                            Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, messageHeader, disableNotification: true);
+                        break;
+                    case MessageType.Photo:
+                        fileId = update.Message.Photo.Last().FileId;
+                        Dumper.Instance().TelegramClient.SendPhotoAsync(Dumper.ChatId, new InputOnlineFile(fileId), caption: messageHeader, disableNotification: true);
+                        break;
+                    case MessageType.Audio:
+                        fileId = update.Message.Audio.FileId;
+                        Dumper.Instance().TelegramClient.SendAudioAsync(Dumper.ChatId, new InputOnlineFile(fileId), messageHeader,
+                            ParseMode.Default,
+                            update.Message.Audio.Duration, update.Message.Audio.Performer ?? "", update.Message.Audio.Title ?? "", disableNotification: true);
+                        break;
+                    case MessageType.Video:
+                        fileId = update.Message.Video.FileId;
+                        Dumper.Instance().TelegramClient.SendVideoAsync(Dumper.ChatId, new InputOnlineFile(fileId),
+                            caption: messageHeader, disableNotification: true);
+                        break;
+                    case MessageType.Voice:
+                        fileId = update.Message.Voice.FileId;
+                        Dumper.Instance().TelegramClient.SendVoiceAsync(Dumper.ChatId, new InputOnlineFile(fileId), caption: messageHeader, disableNotification: true);
+                        break;
+                    case MessageType.Document:
+                        fileId = update.Message.Document.FileId;
+                        Dumper.Instance().TelegramClient.SendDocumentAsync(Dumper.ChatId, new InputOnlineFile(fileId), caption: messageHeader, disableNotification: true);
+                        break;
+                    case MessageType.Sticker:
+                        fileId = update.Message.Sticker.FileId;
+                        Dumper.Instance().TelegramClient.SendStickerAsync(Dumper.ChatId, new InputOnlineFile(fileId), disableNotification: true);
+                        Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, messageHeader, disableNotification: true);
+                        break;
+                    case MessageType.Location:
+                        Dumper.Instance().TelegramClient.SendLocationAsync(Dumper.ChatId, update.Message.Location.Latitude,
+                            update.Message.Location.Longitude, disableNotification: true);
+                        Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, messageHeader, disableNotification: true);
+                        break;
+                    case MessageType.VideoNote:
+                        fileId = update.Message.VideoNote.FileId;
+                        fileId = update.Message.VideoNote.FileId;
+                        Dumper.Instance().TelegramClient.SendVideoNoteAsync(Dumper.ChatId, new InputOnlineFile(fileId),
+                            update.Message.VideoNote.Duration, update.Message.VideoNote.Length);
+                        Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, messageHeader, disableNotification: true);
+                        break;
+                    case MessageType.Animation:
+                    case MessageType.Contact:
+                    case MessageType.Venue:
+                    case MessageType.Game:
+                    case MessageType.Invoice:
+                    case MessageType.SuccessfulPayment:
+                    case MessageType.Unknown:
+                    case MessageType.WebsiteConnected:
+                    case MessageType.ChatMembersAdded:
+                    case MessageType.ChatMemberLeft:
+                    case MessageType.ChatTitleChanged:
+                    case MessageType.ChatPhotoChanged:
+                    case MessageType.MessagePinned:
+                    case MessageType.ChatPhotoDeleted:
+                    case MessageType.GroupCreated:
+                    case MessageType.SupergroupCreated:
+                    case MessageType.ChannelCreated:
+                    case MessageType.MigratedToSupergroup:
+                    case MessageType.MigratedFromGroup:
+                    default:
+                        Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId,
+                            $"{messageHeader} + Message type {update.Message.Type} is not supported.");
+                        break;
+                }
             }
             else
             {
