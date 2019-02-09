@@ -1,5 +1,4 @@
 ﻿using System;
-using Telegram.Bot.Types;
 
 namespace BotMakerPlatform.Web.Areas.EjooUtilBot.Record
 {

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
-using System.Web.Mvc;
 using BotMakerPlatform.Web.Areas.EjooUtilBot.Models;
 using BotMakerPlatform.Web.BotModule;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BotMakerPlatform.Web.Areas.EjooUtilBot.Controllers
 {

@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
-using System.Web;
-using System.Web.Mvc;
 using Autofac;
 using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.Areas.SupportBot;
 using BotMakerPlatform.Web.CriticalDtos;
 using BotMakerPlatform.Web.Repo;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Serilog;
 using Telegram.Bot.Types;
@@ -20,6 +19,7 @@ namespace BotMakerPlatform.Web.Controllers
     {
         private SubscriberRepo SubscriberRepo { get; set; }
         private Db Db { get; }
+        private IHttpContextAccessor HttpContextAccessor { get; }
 
         public WebhookController(Db db)
         {
@@ -36,10 +36,13 @@ namespace BotMakerPlatform.Web.Controllers
             var botInstanceRecord = Db.BotInstanceRecords.SingleOrDefault(x => x.Id == webhookUpdateDto.BotInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);
 
             if (botInstanceRecord == null)
-                throw new HttpException((int)HttpStatusCode.BadRequest, "BotUniqueName or Secret is invalid.");
+            {
+                ModelState.AddModelError("", "BotUniqueName or Secret is invalid.");
+                return BadRequest(ModelState);
+            }
 
-            Request.GetOwinContext().Set("BotClientToken", botInstanceRecord.Token);
-            Request.GetOwinContext().Set("BotInstanceId", webhookUpdateDto.BotInstanceId);
+            HttpContextAccessor.HttpContext.Items.Add("BotClientToken", botInstanceRecord.Token);
+            HttpContextAccessor.HttpContext.Items.Add("BotInstanceId", webhookUpdateDto.BotInstanceId);
 
             using (var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag))
             {
@@ -51,7 +54,7 @@ namespace BotMakerPlatform.Web.Controllers
                 botInstance.Update(webhookUpdateDto.Update, subscriber);
             }
 
-            return Content("");
+            return Ok();
         }
 
         private SubscriberRecord GetOrAddSubscriber(WebhookUpdateDto webhookUpdateDto, ILifetimeScope scope)
@@ -164,7 +167,6 @@ namespace BotMakerPlatform.Web.Controllers
                             update.Message.VideoNote.Duration, update.Message.VideoNote.Length);
                         Dumper.Instance().TelegramClient.SendTextMessageAsync(Dumper.ChatId, messageHeader, disableNotification: true);
                         break;
-                    case MessageType.Animation:
                     case MessageType.Contact:
                     case MessageType.Venue:
                     case MessageType.Game:

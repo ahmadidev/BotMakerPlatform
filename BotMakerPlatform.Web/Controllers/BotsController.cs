@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Data.Entity;
 using System.Linq;
-using System.Web.Mvc;
 using Autofac;
 using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.CriticalDtos;
 using BotMakerPlatform.Web.Repo;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Telegram.Bot;
 
@@ -61,7 +60,10 @@ namespace BotMakerPlatform.Web.Controllers
 
             Log.Information("Adding Webhook for bot {BotUniqueName} ({BotInstanceId})", botInstance.BotUniqueName, botInstance.Id);
 
-            var webhookUrl = $"{Request.Url.Scheme}://{Request.Url.Authority.TrimEnd('/')}/{Request.ApplicationPath?.Trim('/')}/Webhook/Update/?{nameof(WebhookUpdateDto.BotInstanceId)}={botInstance.Id}&{nameof(WebhookUpdateDto.Secret)}={botInstance.WebhookSecret}";
+            // var webhookUrl = $"{Request.Scheme}://{Request.Host.Value}/{Request.ApplicationPath?.Trim('/')}/Webhook/Update/?{nameof(WebhookUpdateDto.BotInstanceId)}={botInstance.Id}&{nameof(WebhookUpdateDto.Secret)}={botInstance.WebhookSecret}";
+
+            var webhookUrl = Url.Action("Update", "Webhook", new WebhookUpdateDto { BotInstanceId = botInstance.Id, Secret = botInstance.WebhookSecret }, Request.Scheme);
+
             telegramClient.SetWebhookAsync(webhookUrl).Wait();
             var botInfoInquiry = telegramClient.GetWebhookInfoAsync().Result;
 

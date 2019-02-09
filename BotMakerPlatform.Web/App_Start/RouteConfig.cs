@@ -1,7 +1,4 @@
-﻿using System.Web.Mvc;
-using System.Web.Routing;
-
-namespace BotMakerPlatform.Web
+﻿namespace BotMakerPlatform.Web
 {
     public class RouteConfig
     {

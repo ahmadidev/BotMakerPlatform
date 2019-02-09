@@ -1,50 +1,67 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using BotMakerPlatform.Web.Areas.StoreBot.Record;
+﻿using BotMakerPlatform.Web.Areas.StoreBot.Record;
 using BotMakerPlatform.Web.Areas.StoreBot.Repo;
+using Microsoft.EntityFrameworkCore;
 
 namespace BotMakerPlatform.Web.Repo
 {
     public class Db : DbContext
     {
-        public Db() : base("DefaultConnectionString")
-        {
-            Database.SetInitializer(new MigrateDatabaseToLatestVersion<Db, Migrations.Configuration>(useSuppliedContext: true));
-        }
+        //public Db() : base("DefaultConnectionString")
+        //{
+        //    Database.SetInitializer(new MigrateDatabaseToLatestVersion<Db, Migrations.Configuration>(useSuppliedContext: true));
+        //}
 
-        public IDbSet<BotInstanceRecord> BotInstanceRecords { get; set; }
-        public IDbSet<SubscriberRecord> Subscribers { get; set; }
-        public IDbSet<SettingRecord> Settings { get; set; }
+        public DbSet<BotInstanceRecord> BotInstanceRecords { get; set; }
+        public DbSet<SubscriberRecord> Subscribers { get; set; }
+        public DbSet<SettingRecord> Settings { get; set; }
 
         //Bot Modules
-        public IDbSet<StoreProductRecord> StoreProductRecords { get; set; }
-        public IDbSet<StoreAdminRecord> StoreAdminRecords { get; set; }
-        public IDbSet<ImageFileRecord> ImageFileRecords { get; set; }
+        public DbSet<StoreProductRecord> StoreProductRecords { get; set; }
+        public DbSet<StoreAdminRecord> StoreAdminRecords { get; set; }
+        public DbSet<ImageFileRecord> ImageFileRecords { get; set; }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
             modelBuilder
                 .Entity<BotInstanceRecord>()
                 .Property(x => x.Id)
-                .HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+                .ValueGeneratedNever();
+
+
 
             modelBuilder
                 .Entity<SubscriberRecord>()
-                .HasKey(x => new { x.BotInstanceRecordId, x.ChatId })
-                .Property(x => x.ChatId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+                .HasKey(x => new { x.BotInstanceRecordId, x.ChatId });
+
+            modelBuilder
+                .Entity<SubscriberRecord>()
+                .Property(x => x.ChatId)
+                .ValueGeneratedNever();
+
+
 
             modelBuilder
                 .Entity<SettingRecord>()
-                .HasKey(x => x.BotInstanceRecordId)
-                .Property(x => x.BotInstanceRecordId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+                .HasKey(x => x.BotInstanceRecordId);
+
+            modelBuilder
+                .Entity<SettingRecord>()
+                .Property(x => x.BotInstanceRecordId)
+                .ValueGeneratedNever();
+
+
 
             //Bots Data
             modelBuilder
                 .Entity<StoreAdminRecord>()
-                .HasKey(x => new { x.BotInstanceRecordId, x.ChatId })
-                .Property(x => x.ChatId).HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
+                .HasKey(x => new { x.BotInstanceRecordId, x.ChatId });
+
+            modelBuilder
+                .Entity<StoreAdminRecord>()
+                .Property(x => x.ChatId)
+                .ValueGeneratedNever();
         }
     }
 }

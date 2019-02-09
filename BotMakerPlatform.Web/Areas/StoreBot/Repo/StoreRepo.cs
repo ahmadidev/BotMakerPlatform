@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using BotMakerPlatform.Web.Repo;
+using Microsoft.EntityFrameworkCore;
 
 namespace BotMakerPlatform.Web.Areas.StoreBot.Repo
 {

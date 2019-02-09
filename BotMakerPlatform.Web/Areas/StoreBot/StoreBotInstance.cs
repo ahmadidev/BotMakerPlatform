@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using BotMakerPlatform.Web.Areas.StoreBot.Models;
 using BotMakerPlatform.Web.Areas.StoreBot.Record;
 using BotMakerPlatform.Web.Areas.StoreBot.Repo;
-using BotMakerPlatform.Web.Controllers;
 using BotMakerPlatform.Web.Repo;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Types;

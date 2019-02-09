@@ -1,6 +1,6 @@
-﻿using System.Web.Mvc;
-using System.Linq;
+﻿using System.Linq;
 using BotMakerPlatform.Web.Repo;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BotMakerPlatform.Web.Controllers
 {

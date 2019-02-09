@@ -1,42 +1,57 @@
-﻿using BotMakerPlatform.Web;
-using Microsoft.AspNet.Identity;
-using Microsoft.Owin;
-using Microsoft.Owin.Security.Cookies;
-using Microsoft.Owin.Security.Google;
-using Owin;
-using System.Web.Mvc;
-using System.Web.Routing;
-using Microsoft.Owin.Security;
-using Serilog;
-
-[assembly: OwinStartup(typeof(Startup))]
+﻿using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace BotMakerPlatform.Web
 {
-    public partial class Startup
+    public class Startup
     {
-        public void Configuration(IAppBuilder app)
+        public Startup(IConfiguration configuration)
         {
-            AreaRegistration.RegisterAllAreas();
-            RouteConfig.RegisterRoutes(RouteTable.Routes);
-            IocConfig.Config();
-            //SchedulerConfig.Config(app);
-            LoggerConfig.Config();
+            Configuration = configuration;
+        }
 
-            app.UseCookieAuthentication(new CookieAuthenticationOptions
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public IServiceProvider ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc().AddControllersAsServices().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            return IocConfig.Config(services);
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        {
+            if (env.IsDevelopment())
             {
-                AuthenticationType = DefaultAuthenticationTypes.ApplicationCookie
-            });
-
-            app.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions
+                app.UseDeveloperExceptionPage();
+            }
+            else
             {
-                ClientId = "742244818490-kauqsvkp658r666rc92j6vsgo92u24ej.apps.googleusercontent.com",
-                ClientSecret = "zqd4qkAzGZ9jcVClXsM-NgSV"
+                app.UseExceptionHandler();
+
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute(
+                    name: "areaRoute",
+                    template: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+
+                routes.MapRoute(
+                    name: "default",
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
-
-            app.SetDefaultSignInAsAuthenticationType(DefaultAuthenticationTypes.ApplicationCookie);
-
-            Log.Information("App started successfully.");
         }
     }
 }

@@ -1,10 +1,10 @@
 ﻿using System.Linq;
-using System.Web.Mvc;
 using BotMakerPlatform.Web.Areas.StoreBot.Models;
 using BotMakerPlatform.Web.Areas.StoreBot.Record;
 using BotMakerPlatform.Web.Areas.StoreBot.Repo;
 using BotMakerPlatform.Web.BotModule;
 using BotMakerPlatform.Web.Repo;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
 {
@@ -58,7 +58,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
 
             storeAdminRepo.AddAdmin(chatId);
 
-            return Redirect(Request.UrlReferrer?.ToString());
+            return Redirect(Request.Headers["Referer"].ToString());
         }
 
         [HttpPost]
@@ -68,7 +68,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
 
             storeAdminRepo.RemoveAdmin(chatId);
 
-            return Redirect(Request.UrlReferrer?.ToString());
+            return Redirect(Request.Headers["Referer"].ToString());
         }
     }
 }

@@ -1,24 +1,17 @@
-﻿using BotMakerPlatform.Web;
-using Microsoft.Owin;
-using Serilog;
-
-[assembly: OwinStartup(typeof(Startup))]
+﻿using Serilog;
 
 namespace BotMakerPlatform.Web
 {
-    public partial class Startup
+    public class LoggerConfig
     {
-        public class LoggerConfig
+        public static void Config()
         {
-            public static void Config()
-            {
-                Log.Logger = new LoggerConfiguration()
-                    .WriteTo.MSSqlServer(
-                        connectionString: "DefaultConnectionString",
-                        tableName: "Logs",
-                        autoCreateSqlTable: true
-                    ).CreateLogger();
-            }
+            Log.Logger = new LoggerConfiguration()
+                .WriteTo.MSSqlServer(
+                    connectionString: "DefaultConnectionString",
+                    tableName: "Logs",
+                    autoCreateSqlTable: true
+                ).CreateLogger();
         }
     }
 }

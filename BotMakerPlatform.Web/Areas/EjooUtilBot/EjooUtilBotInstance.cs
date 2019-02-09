@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using BotMakerPlatform.Web.Areas.EjooUtilBot.Record;
 using BotMakerPlatform.Web.Areas.EjooUtilBot.Repo;
-using BotMakerPlatform.Web.Controllers;
 using BotMakerPlatform.Web.Repo;
 using iText.IO.Image;
 using iText.Kernel.Geom;

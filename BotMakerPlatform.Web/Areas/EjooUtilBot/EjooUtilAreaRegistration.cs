@@ -1,12 +1,10 @@
-﻿using System.Web.Mvc;
-
-namespace BotMakerPlatform.Web.Areas.EjooUtilBot
+﻿namespace BotMakerPlatform.Web.Areas.EjooUtilBot
 {
-    public class EjooUtilAreaRegistration : AreaRegistration 
+    public class EjooUtilAreaRegistration : AreaRegistration
     {
         public override string AreaName => "EjooUtilBot";
 
-        public override void RegisterArea(AreaRegistrationContext context) 
+        public override void RegisterArea(AreaRegistrationContext context)
         {
             context.MapRoute(
                 "EjooUtilBot_default",

@@ -1,5 +1,5 @@
-﻿using System.Data.Entity;
-using System.Linq;
+﻿using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 
 namespace BotMakerPlatform.Web.Repo

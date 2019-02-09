@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using System.Web.Mvc;
 using BotMakerPlatform.Web.Areas.SupportBot.Models;
 using BotMakerPlatform.Web.Areas.SupportBot.Repo;
 using BotMakerPlatform.Web.BotModule;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
 {
@@ -45,7 +45,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
             //TODO: What's the correct way?
             //ConnectionNotifier.CustomerDisconnected();
 
-            return Redirect(Request.UrlReferrer?.ToString());
+            return Redirect(Request.Headers["Referer"].ToString());
         }
 
         [HttpPost]
@@ -54,7 +54,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
             var supporterRepo = new SupporterRepo(BotInstanceId);
             supporterRepo.Remove(chatId);
 
-            return Redirect(Request.UrlReferrer?.ToString());
+            return Redirect(Request.Headers["Referer"].ToString());
         }
 
         [HttpPost]
@@ -63,7 +63,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
             var settingRepo = new SettingRepo(BotInstanceId);
             settingRepo.SetWelcomeMessage(welcomeMessage);
 
-            return Redirect(Request.UrlReferrer?.ToString());
+            return Redirect(Request.Headers["Referer"].ToString());
         }
     }
 }

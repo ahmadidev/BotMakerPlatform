@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
-using System.Web.Mvc;
 using Autofac;
 using Autofac.Core.Lifetime;
 using BotMakerPlatform.Web.Repo;
-using Microsoft.AspNet.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore;
 using Telegram.Bot;
 
 namespace BotMakerPlatform.Web.BotModule
@@ -21,10 +21,10 @@ namespace BotMakerPlatform.Web.BotModule
         {
             var webhookInfo = TelegramClient.GetWebhookInfoAsync().Result;
 
-            return Json(webhookInfo, JsonRequestBehavior.AllowGet);
+            return Json(webhookInfo);
         }
 
-        protected override void OnActionExecuting(ActionExecutingContext filterContext)
+        public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
             var botUniqueName = filterContext.RouteData.DataTokens["area"].ToString();
             UserId = User.Identity.GetUserId();

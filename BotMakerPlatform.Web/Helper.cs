@@ -1,4 +1,6 @@
 ﻿using System.Globalization;
+using System.Security.Claims;
+using System.Security.Principal;
 
 namespace BotMakerPlatform.Web
 {
@@ -45,6 +47,11 @@ namespace BotMakerPlatform.Web
                 text = text.Replace(faNativeDigits[i], i.ToString());
 
             return text;
+        }
+
+        public static string GetUserId(this IIdentity identity)
+        {
+            return (identity as ClaimsIdentity).FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
     }
 }
