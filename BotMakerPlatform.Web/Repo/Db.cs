@@ -11,6 +11,10 @@ namespace BotMakerPlatform.Web.Repo
         //    Database.SetInitializer(new MigrateDatabaseToLatestVersion<Db, Migrations.Configuration>(useSuppliedContext: true));
         //}
 
+        public Db(DbContextOptions<Db> contextOptions) : base(contextOptions)
+        {
+        }
+
         public DbSet<BotInstanceRecord> BotInstanceRecords { get; set; }
         public DbSet<SubscriberRecord> Subscribers { get; set; }
         public DbSet<SettingRecord> Settings { get; set; }

@@ -10,9 +10,16 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
 {
     public class HomeController : BaseController
     {
+        private Db Db { get; }
+
+        public HomeController(Db db)
+        {
+            Db = db;
+        }
+
         public ActionResult Index()
         {
-            var storeAdminRepo = new StoreAdminRepo(BotInstanceId, new Db());
+            var storeAdminRepo = new StoreAdminRepo(BotInstanceId, Db);
 
             //What an acidi method...
             var storeSubscribers = Subscribers
@@ -34,7 +41,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
         [HttpGet]
         public ActionResult Settings()
         {
-            var settingRepo = new SettingRepo(BotInstanceId, new Db());
+            var settingRepo = new SettingRepo(BotInstanceId, Db);
             var model = settingRepo.Load<Setting>();
 
             return View(model);
@@ -43,7 +50,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
         [HttpPost]
         public ActionResult Settings(Setting setting)
         {
-            var settingRepo = new SettingRepo(BotInstanceId, new Db());
+            var settingRepo = new SettingRepo(BotInstanceId, Db);
             settingRepo.Save(setting);
 
             TempData["Message"] = "تنظیمات جدید با موفقیت ثبت شد";
@@ -54,7 +61,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
         [HttpPost]
         public ActionResult MakeAdmin(long chatId)
         {
-            var storeAdminRepo = new StoreAdminRepo(BotInstanceId, new Db());
+            var storeAdminRepo = new StoreAdminRepo(BotInstanceId, Db);
 
             storeAdminRepo.AddAdmin(chatId);
 
@@ -64,7 +71,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
         [HttpPost]
         public ActionResult RemoveAdmin(long chatId)
         {
-            var storeAdminRepo = new StoreAdminRepo(BotInstanceId, new Db());
+            var storeAdminRepo = new StoreAdminRepo(BotInstanceId, Db);
 
             storeAdminRepo.RemoveAdmin(chatId);
 

@@ -43,6 +43,8 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
         private SettingRepo SettingRepo { get; }
         private StoreAdminRepo StoreAdminRepo { get; }
 
+        private Db Db { get; }
+
         public enum NewProductSteps
         {
             Begin,
@@ -69,11 +71,12 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
         private static readonly Dictionary<long, NewProductInState> NewProductStates = new Dictionary<long, NewProductInState>();
 
-        public StoreBotInstance(ITelegramBotClient telegramClient, SettingRepo settingRepo, StoreAdminRepo storeAdminRepo)
+        public StoreBotInstance(ITelegramBotClient telegramClient, SettingRepo settingRepo, StoreAdminRepo storeAdminRepo, Db db)
         {
             TelegramClient = telegramClient;
             SettingRepo = settingRepo;
             StoreAdminRepo = storeAdminRepo;
+            Db = db;
         }
 
         public void Update(Update update, SubscriberRecord subscriberRecord)
@@ -110,7 +113,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                     HandleNewProductMessage(update, subscriberRecord);
                     break;
                 case StateManager.Keyboards.ListProductsCommand:
-                    using (var db = new Db())
+                    using (var db = Db)
                     {
                         var products = db.StoreProductRecords.Include(x => x.ImageFileRecords).AsNoTracking().Where(x => x.BotInstanceRecordId == BotInstanceId);
 
@@ -200,7 +203,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
             if (parts.Length == 2 && parts[0] == "reset" && int.TryParse(parts[1], out var productId))
             {
-                using (var db = new Db())
+                using (var db = Db)
                 {
                     var product = db.StoreProductRecords.SingleOrDefault(x => x.Id == productId);
 
@@ -226,7 +229,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                     return;
                 }
 
-                using (var db = new Db())
+                using (var db = Db)
                 {
                     var product = db.StoreProductRecords.Include(x => x.ImageFileRecords).AsNoTracking().SingleOrDefault(x => x.Id == productId);
                     var chatId = update.CallbackQuery.Message.Chat.Id;
@@ -261,7 +264,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             }
             else if (parts.Length == 2 && parts[0] == "delete" && int.TryParse(parts[1], out productId))
             {
-                using (var db = new Db())
+                using (var db = Db)
                 {
                     var product = db.StoreProductRecords.SingleOrDefault(x => x.Id == productId);
 
@@ -277,7 +280,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             }
             else if (parts.Length == 2 && parts[0] == "images" && int.TryParse(parts[1], out productId))
             {
-                using (var db = new Db())
+                using (var db = Db)
                 {
                     var product = db.StoreProductRecords.Single(x => x.Id == productId);
                     var total = product.ImageFileRecords.Count;
@@ -296,7 +299,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             }
             else if (parts.Length == 2 && parts[0] == "images_next")
             {
-                using (var db = new Db())
+                using (var db = Db)
                 {
                     var currentIndex = int.Parse(parts[1].Split(',')[0]);
                     productId = int.Parse(parts[1].Split(',')[1]);
@@ -325,7 +328,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
             }
             else if (parts.Length == 2 && parts[0] == "images_prev")
             {
-                using (var db = new Db())
+                using (var db = Db)
                 {
                     var currentIndex = int.Parse(parts[1].Split(',')[0]);
                     productId = int.Parse(parts[1].Split(',')[1]);
@@ -397,7 +400,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                         if (!NewProductStates[chatId].IsEdit ||
                             (NewProductStates[chatId].IsEdit && NewProductStates[chatId].ProductRecord.Code != update.Message.Text))
                         {
-                            using (var db = new Db())
+                            using (var db = Db)
                             {
                                 var duplicateCodeProduct = db.StoreProductRecords.SingleOrDefault(x => x.BotInstanceRecordId == BotInstanceId && x.Code == update.Message.Text);
 
@@ -465,7 +468,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                             return;
                         }
 
-                        using (var db = new Db())
+                        using (var db = Db)
                         {
                             if (NewProductStates[chatId].IsEdit)
                             {

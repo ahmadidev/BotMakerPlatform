@@ -1,7 +1,9 @@
 ﻿using System;
+using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +22,9 @@ namespace BotMakerPlatform.Web
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().AddControllersAsServices().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddDbContext<Db>
+                (options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnectionString")));
 
             return IocConfig.Config(services);
         }
