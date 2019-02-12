@@ -28,44 +28,32 @@ namespace BotMakerPlatform.Web.Repo
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder
-                .Entity<BotInstanceRecord>()
-                .Property(x => x.Id)
-                .ValueGeneratedNever();
+            modelBuilder.Entity<BotInstanceRecord>(builder =>
+            {
+                builder.Property(x => x.Id).ValueGeneratedNever();
+            });
 
 
-
-            modelBuilder
-                .Entity<SubscriberRecord>()
-                .HasKey(x => new { x.BotInstanceRecordId, x.ChatId });
-
-            modelBuilder
-                .Entity<SubscriberRecord>()
-                .Property(x => x.ChatId)
-                .ValueGeneratedNever();
+            modelBuilder.Entity<SubscriberRecord>(entity =>
+            {
+                entity.HasKey(x => new { x.BotInstanceRecordId, x.ChatId });
+                entity.Property(x => x.ChatId).ValueGeneratedNever();
+            });
 
 
-
-            modelBuilder
-                .Entity<SettingRecord>()
-                .HasKey(x => x.BotInstanceRecordId);
-
-            modelBuilder
-                .Entity<SettingRecord>()
-                .Property(x => x.BotInstanceRecordId)
-                .ValueGeneratedNever();
-
+            modelBuilder.Entity<SettingRecord>(builder =>
+            {
+                builder.HasKey(x => x.BotInstanceRecordId);
+                builder.Property(x => x.BotInstanceRecordId).ValueGeneratedNever();
+            });
 
 
             //Bots Data
-            modelBuilder
-                .Entity<StoreAdminRecord>()
-                .HasKey(x => new { x.BotInstanceRecordId, x.ChatId });
-
-            modelBuilder
-                .Entity<StoreAdminRecord>()
-                .Property(x => x.ChatId)
-                .ValueGeneratedNever();
+            modelBuilder.Entity<StoreAdminRecord>(builder =>
+            {
+                builder.HasKey(x => new { x.BotInstanceRecordId, x.ChatId });
+                builder.Property(x => x.ChatId).ValueGeneratedNever();
+            });
         }
     }
 }

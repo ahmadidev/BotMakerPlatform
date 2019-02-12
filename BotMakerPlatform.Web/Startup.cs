@@ -38,7 +38,8 @@ namespace BotMakerPlatform.Web
             }
             else
             {
-                app.UseExceptionHandler();
+                //app.UseExceptionHandler();
+                app.UseDeveloperExceptionPage();
 
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
@@ -57,6 +58,13 @@ namespace BotMakerPlatform.Web
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<Db>();
+                //context.Database.EnsureDeleted();
+                context.Database.Migrate();
+            }
         }
     }
 }
