@@ -7,7 +7,7 @@ using BotMakerPlatform.Web.Areas.StoreBot.Record;
 using BotMakerPlatform.Web.Areas.StoreBot.Repo;
 using BotMakerPlatform.Web.Repo;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -45,6 +45,8 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
         private Db Db { get; }
 
+        private ILogger<StoreBotInstance> Logger { get; }
+
         public enum NewProductSteps
         {
             Begin,
@@ -71,12 +73,13 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
 
         private static readonly Dictionary<long, NewProductInState> NewProductStates = new Dictionary<long, NewProductInState>();
 
-        public StoreBotInstance(ITelegramBotClient telegramClient, SettingRepo settingRepo, StoreAdminRepo storeAdminRepo, Db db)
+        public StoreBotInstance(ITelegramBotClient telegramClient, SettingRepo settingRepo, StoreAdminRepo storeAdminRepo, Db db, ILogger<StoreBotInstance> logger)
         {
             TelegramClient = telegramClient;
             SettingRepo = settingRepo;
             StoreAdminRepo = storeAdminRepo;
             Db = db;
+            Logger = logger;
         }
 
         public void Update(Update update, SubscriberRecord subscriberRecord)
@@ -158,7 +161,7 @@ namespace BotMakerPlatform.Web.Areas.StoreBot
                                 })
                                 .ContinueWith(task =>
                                 {
-                                    Log.Error("Delayed Message Exception: {Message}", task.Exception?.GetBaseException().Message);
+                                    Logger.LogError("Delayed Message Exception: {Message}", task.Exception?.GetBaseException().Message);
                                 }, TaskContinuationOptions.OnlyOnFaulted);
                         }
                     }

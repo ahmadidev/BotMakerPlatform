@@ -6,14 +6,18 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace BotMakerPlatform.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private ILogger<Startup> Logger { get; }
+
+        public Startup(IConfiguration configuration, ILogger<Startup> logger)
         {
             Configuration = configuration;
+            Logger = logger;
         }
 
         public IConfiguration Configuration { get; }
@@ -65,6 +69,8 @@ namespace BotMakerPlatform.Web
                 //context.Database.EnsureDeleted();
                 context.Database.Migrate();
             }
+
+            Logger.LogInformation("Api started successfully.");
         }
     }
 }

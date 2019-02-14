@@ -8,7 +8,7 @@ using iText.IO.Image;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Layout.Element;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -36,16 +36,20 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
         private SubscriberRepo SubscriberRepo { get; }
         private ITelegramBotClient TelegramClient { get; }
 
+        private ILogger<EjooUtilBotInstance> Logger { get; }
+
         private static long _broadcastingSubscriberChatId;
 
         public EjooUtilBotInstance(
             ItemsQueueRepo itemsQueueRepo,
             SubscriberRepo subscriberRepo,
-            ITelegramBotClient telegramClient)
+            ITelegramBotClient telegramClient,
+            ILogger<EjooUtilBotInstance> logger)
         {
             ItemsQueueRepo = itemsQueueRepo;
             SubscriberRepo = subscriberRepo;
             TelegramClient = telegramClient;
+            Logger = logger;
         }
 
         public void Update(Update update, SubscriberRecord subscriberRecord)
@@ -104,7 +108,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                     catch (Exception exception)
                     {
                         var baseException = exception.GetBaseException();
-                        Log.Error(baseException, "Error in Flush: {Message} -> {StackTrace}", baseException.Message, baseException.StackTrace);
+                        Logger.LogError(baseException, "Error in Flush: {Message} -> {StackTrace}", baseException.Message, baseException.StackTrace);
                     }
                     break;
                 default:
@@ -289,7 +293,7 @@ namespace BotMakerPlatform.Web.Areas.EjooUtilBot
                                 catch (Exception exception)
                                 {
                                     var baseException = exception.GetBaseException();
-                                    Log.Error(baseException, "Read Pdf File Failed: {Message} -> {StackTrace}", baseException.Message, baseException.StackTrace);
+                                    Logger.LogError(baseException, "Read Pdf File Failed: {Message} -> {StackTrace}", baseException.Message, baseException.StackTrace);
                                 }
                             }
                             break;

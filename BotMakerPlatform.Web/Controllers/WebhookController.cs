@@ -7,8 +7,8 @@ using BotMakerPlatform.Web.CriticalDtos;
 using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Serilog;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InputFiles;
@@ -19,18 +19,22 @@ namespace BotMakerPlatform.Web.Controllers
     {
         private SubscriberRepo SubscriberRepo { get; set; }
         private Db Db { get; }
-        private IHttpContextAccessor HttpContextAccessor { get; }
 
-        public WebhookController(Db db)
+        private IHttpContextAccessor HttpContextAccessor { get; }
+        private ILogger<WebhookController> Logger { get; }
+
+        public WebhookController(Db db, IHttpContextAccessor httpContextAccessor, ILogger<WebhookController> logger)
         {
             Db = db;
+            HttpContextAccessor = httpContextAccessor;
+            Logger = logger;
         }
 
         // Webhook/Update/?BotInstanceId=[int]&Secret=somesecretrandom
         [HttpPost]
         public ActionResult Update([ModelBinder(typeof(UpdateModelBinder))]WebhookUpdateDto webhookUpdateDto)
         {
-            Log.Information("Telegram hit webhook BotInstanceId: {BotInstanceId} Secret: {Secret} UpdateType: {UpdateType} MessageType: {MessageType}.",
+            Logger.LogInformation("Telegram hit webhook BotInstanceId: {BotInstanceId} Secret: {Secret} UpdateType: {UpdateType} MessageType: {MessageType}.",
                 webhookUpdateDto.BotInstanceId, webhookUpdateDto.Secret, webhookUpdateDto.Update.Type, webhookUpdateDto.Update.Message?.Type);
 
             var botInstanceRecord = Db.BotInstanceRecords.SingleOrDefault(x => x.Id == webhookUpdateDto.BotInstanceId && x.WebhookSecret == webhookUpdateDto.Secret);

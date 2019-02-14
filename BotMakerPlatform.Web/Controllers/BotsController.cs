@@ -6,7 +6,7 @@ using BotMakerPlatform.Web.CriticalDtos;
 using BotMakerPlatform.Web.Repo;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Serilog;
+using Microsoft.Extensions.Logging;
 using Telegram.Bot;
 
 namespace BotMakerPlatform.Web.Controllers
@@ -16,10 +16,13 @@ namespace BotMakerPlatform.Web.Controllers
         private Db Db { get; }
         private BotDefinitionRepo BotDefinitionRepo { get; }
 
-        public BotsController(Db db, BotDefinitionRepo botDefinitionRepo)
+        private ILogger<BotsController> Logger { get; }
+
+        public BotsController(Db db, BotDefinitionRepo botDefinitionRepo, ILogger<BotsController> logger)
         {
             Db = db;
             BotDefinitionRepo = botDefinitionRepo;
+            Logger = logger;
         }
 
         [HttpGet]
@@ -58,7 +61,7 @@ namespace BotMakerPlatform.Web.Controllers
                 WebhookSecret = Guid.NewGuid().ToString("N")
             };
 
-            Log.Information("Adding Webhook for bot {BotUniqueName} ({BotInstanceId})", botInstance.BotUniqueName, botInstance.Id);
+            Logger.LogInformation("Adding Webhook for bot {BotUniqueName} ({BotInstanceId})", botInstance.BotUniqueName, botInstance.Id);
 
             // var webhookUrl = $"{Request.Scheme}://{Request.Host.Value}/{Request.ApplicationPath?.Trim('/')}/Webhook/Update/?{nameof(WebhookUpdateDto.BotInstanceId)}={botInstance.Id}&{nameof(WebhookUpdateDto.Secret)}={botInstance.WebhookSecret}";
 
