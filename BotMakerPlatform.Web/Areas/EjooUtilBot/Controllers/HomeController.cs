@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BotMakerPlatform.Web.Areas.EjooUtilBot.Controllers
 {
+    [Area("EjooUtilBot")]
     public class HomeController : BaseController
     {
         public ActionResult Index()

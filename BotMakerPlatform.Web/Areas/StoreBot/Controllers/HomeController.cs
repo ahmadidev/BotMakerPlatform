@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BotMakerPlatform.Web.Areas.StoreBot.Controllers
 {
+    [Area("StoreBot")]
     public class HomeController : BaseController
     {
         private Db Db { get; }

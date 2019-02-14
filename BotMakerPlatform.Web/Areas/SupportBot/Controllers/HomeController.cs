@@ -8,6 +8,7 @@ namespace BotMakerPlatform.Web.Areas.SupportBot.Controllers
 {
     public class HomeController : BaseController
     {
+        [Area("SupportBot")]
         public ActionResult Index()
         {
             const string defaultWelcomeMessage = "Welcome to your support!\nWe never leave you alone😊";

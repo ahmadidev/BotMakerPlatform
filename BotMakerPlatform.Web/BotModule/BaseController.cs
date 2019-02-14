@@ -26,13 +26,16 @@ namespace BotMakerPlatform.Web.BotModule
 
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
-            var botUniqueName = filterContext.RouteData.DataTokens["area"].ToString();
+            var botUniqueName = filterContext.RouteData.Values["area"].ToString();
             UserId = User.Identity.GetUserId();
 
             //TODO: Make sure don't leak
             var scope = IocConfig.Container.BeginLifetimeScope(MatchingScopeLifetimeTags.RequestLifetimeScopeTag);
             var db = scope.Resolve<Db>();
-            var botInstance = db.BotInstanceRecords.AsNoTracking().SingleOrDefault(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
+            var botInstance = db.BotInstanceRecords
+                .AsNoTracking()
+                .Include(x => x.SubscriberRecords)
+                .SingleOrDefault(x => x.BotUniqueName == botUniqueName && x.UserId == UserId);
 
             TelegramClient = scope.Resolve<ITelegramBotClient>(new NamedParameter("token", botInstance.Token));
 

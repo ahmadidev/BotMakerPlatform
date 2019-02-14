@@ -19,7 +19,7 @@
     {
         <p>
             <small>
-                <a href="@Url.Action("Index", "Home", new {area = Model.UniqueName})">Manage</a> your @@@(((BotInstanceRecord) ViewBag.BotInstance).BotUsername)
+                <a asp-controller="Home" asp-action="Index" asp-area="@Model.UniqueName">Manage</a> your @@@(((BotInstanceRecord) ViewBag.BotInstance).BotUsername)
                 <i>
                     @if (ViewBag.SubscribersCount == 0)
                     {
@@ -30,9 +30,9 @@
                         <text>(@ViewBag.SubscribersCount @(@ViewBag.SubscribersCount == 1 ? "subsciber" : "subscibers"))</text>
                     }
                 </i>
-        </small>
+            </small>
 
-    </p>
+        </p>
     }
     <span>@Model.Description</span>
 </p>
