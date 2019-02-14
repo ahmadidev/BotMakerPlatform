@@ -15,6 +15,7 @@ using Telegram.Bot.Types.InputFiles;
 
 namespace BotMakerPlatform.Web.Controllers
 {
+    [ApiController]
     public class WebhookController : Controller
     {
         private SubscriberRepo SubscriberRepo { get; set; }
@@ -29,8 +30,8 @@ namespace BotMakerPlatform.Web.Controllers
             HttpContextAccessor = httpContextAccessor;
             Logger = logger;
         }
-
-        // Webhook/Update/?BotInstanceId=[int]&Secret=somesecretrandom
+        
+        [Route("Webhook/Update/{BotInstanceId}/{Secret}")]
         [HttpPost]
         public ActionResult Update([ModelBinder(typeof(UpdateModelBinder))]WebhookUpdateDto webhookUpdateDto)
         {

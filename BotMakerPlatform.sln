@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BotMakerPlatform.Web", "BotMakerPlatform.Web\BotMakerPlatform.Web.csproj", "{7D0EF115-DE3E-405E-82BA-3D35310F6115}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Simulator", "BotMakerPlatform.Simulator\Simulator.csproj", "{49A19D4C-FD22-4B72-97C3-49AA0C9A2082}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{7D0EF115-DE3E-405E-82BA-3D35310F6115}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D0EF115-DE3E-405E-82BA-3D35310F6115}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D0EF115-DE3E-405E-82BA-3D35310F6115}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49A19D4C-FD22-4B72-97C3-49AA0C9A2082}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49A19D4C-FD22-4B72-97C3-49AA0C9A2082}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49A19D4C-FD22-4B72-97C3-49AA0C9A2082}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49A19D4C-FD22-4B72-97C3-49AA0C9A2082}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
